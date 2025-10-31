@@ -1,101 +1,318 @@
 import React, { useState } from "react";
-import { signup } from "../services/api";
+import { signup, googleLogin } from "../services/api";
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Signup() {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "customer" });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await signup(form);
-    alert(res.data.msg);
+    try {
+      const res = await signup(form);
+      alert(res.data.msg);
+    } catch (error) {
+      alert("Signup failed: " + (error.response?.data?.msg || error.message));
+    }
   };
 
-  // Shared styles
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await googleLogin({ credential: credentialResponse.credential });
+      localStorage.setItem("token", res.data.token);
+      alert("Google Signup successful! Role: " + res.data.user.role);
+    } catch (error) {
+      alert("Google signup failed: " + (error.response?.data?.msg || error.message));
+    }
+  };
+
+  const handleGoogleError = () => {
+    alert("Google signup failed");
+  };
+
+  // Inline styles matching the login page
   const styles = {
     container: {
+      minHeight: "100vh",
       display: "flex",
-      justifyContent: "center",
       alignItems: "center",
-      height: "100vh",
-      background: "#f4f6f9",
+      justifyContent: "center",
+      padding: "16px",
+      background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
     },
-    form: {
+    wrapper: {
+      width: "100%",
+      maxWidth: "448px"
+    },
+    header: {
+      textAlign: "center",
+      marginBottom: "32px"
+    },
+    logoContainer: {
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "80px",
+      height: "80px",
       background: "white",
-      padding: "30px 40px",
-      borderRadius: "12px",
-      boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
-      display: "flex",
-      flexDirection: "column",
-      gap: "15px",
-      width: "320px",
+      borderRadius: "16px",
+      marginBottom: "12px",
+      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+    },
+    title: {
+      color: "white",
+      fontSize: "20px",
+      fontWeight: "bold",
+      letterSpacing: "0.025em"
+    },
+    subtitle: {
+      color: "#bfdbfe",
+      fontSize: "14px",
+      marginTop: "4px"
+    },
+    card: {
+      background: "white",
+      borderRadius: "16px",
+      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+      padding: "32px"
     },
     heading: {
-      textAlign: "center",
-      marginBottom: "10px",
-      color: "#333",
+      fontSize: "24px",
+      fontWeight: "bold",
+      color: "#1f2937",
+      marginBottom: "24px",
+      textAlign: "center"
+    },
+    formGroup: {
+      marginBottom: "16px"
+    },
+    label: {
+      display: "block",
+      fontSize: "14px",
+      color: "#4b5563",
+      marginBottom: "6px"
     },
     input: {
-      padding: "12px",
-      border: "1px solid #ccc",
+      width: "100%",
+      padding: "12px 16px",
+      border: "1px solid #e5e7eb",
       borderRadius: "8px",
       fontSize: "15px",
+      outline: "none",
+      transition: "all 0.15s",
+      boxSizing: "border-box"
     },
-    select: {
-      padding: "12px",
-      border: "1px solid #ccc",
-      borderRadius: "8px",
-      fontSize: "15px",
-      background: "white",
+    passwordContainer: {
+      position: "relative"
+    },
+    eyeButton: {
+      position: "absolute",
+      right: "12px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "#9ca3af",
+      padding: "4px",
+      display: "flex",
+      alignItems: "center"
     },
     button: {
-      padding: "12px",
-      background: "#007bff",
+      width: "100%",
+      padding: "12px 16px",
+      background: "#2563eb",
       color: "white",
       fontSize: "16px",
-      fontWeight: "bold",
+      fontWeight: "600",
       border: "none",
       borderRadius: "8px",
       cursor: "pointer",
-      transition: "background 0.3s ease",
+      transition: "all 0.2s",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+      marginTop: "8px"
     },
+    dividerContainer: {
+      position: "relative",
+      margin: "24px 0"
+    },
+    dividerLine: {
+      position: "absolute",
+      inset: "0",
+      display: "flex",
+      alignItems: "center"
+    },
+    dividerBorder: {
+      width: "100%",
+      borderTop: "1px solid #e5e7eb"
+    },
+    dividerTextContainer: {
+      position: "relative",
+      display: "flex",
+      justifyContent: "center",
+      fontSize: "14px"
+    },
+    dividerText: {
+      padding: "0 16px",
+      background: "white",
+      color: "#6b7280"
+    },
+    googleButtonContainer: {
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: "24px"
+    },
+    footer: {
+      textAlign: "center",
+      marginTop: "24px"
+    },
+    footerText: {
+      color: "#4b5563",
+      fontSize: "14px"
+    },
+    loginLink: {
+      color: "#2563eb",
+      textDecoration: "none",
+      fontWeight: "600"
+    }
   };
 
   return (
-    <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleSubmit}>
-        <h2 style={styles.heading}>Signup</h2>
-        <input
-          style={styles.input}
-          placeholder="Name"
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <input
-          style={styles.input}
-          placeholder="Email"
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-        <input
-          style={styles.input}
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
-        <select
-          style={styles.select}
-          onChange={(e) => setForm({ ...form, role: e.target.value })}
-        >
-          <option value="customer">Customer</option>
-          <option value="employee">Employee</option>
-        </select>
-        <button
-          style={styles.button}
-          onMouseOver={(e) => (e.target.style.background = "#0056b3")}
-          onMouseOut={(e) => (e.target.style.background = "#007bff")}
-          type="submit"
-        >
-          Signup
-        </button>
-      </form>
-    </div>
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <div style={styles.container}>
+        <div style={styles.wrapper}>
+          <div style={styles.card}>
+            <h2 style={styles.heading}>Create your account</h2>
+
+            <form onSubmit={handleSubmit}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Full Name</label>
+                <input
+                  type="text"
+                  style={styles.input}
+                  placeholder="Enter your full name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onFocus={(e) => {
+                    e.target.style.outline = "2px solid #3b82f6";
+                    e.target.style.outlineOffset = "0px";
+                    e.target.style.borderColor = "transparent";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.outline = "none";
+                    e.target.style.borderColor = "#e5e7eb";
+                  }}
+                  required
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Email</label>
+                <input
+                  type="email"
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onFocus={(e) => {
+                    e.target.style.outline = "2px solid #3b82f6";
+                    e.target.style.outlineOffset = "0px";
+                    e.target.style.borderColor = "transparent";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.outline = "none";
+                    e.target.style.borderColor = "#e5e7eb";
+                  }}
+                  required
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Password</label>
+                <div style={styles.passwordContainer}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    style={{...styles.input, paddingRight: "48px"}}
+                    placeholder="Create a password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    onFocus={(e) => {
+                      e.target.style.outline = "2px solid #3b82f6";
+                      e.target.style.outlineOffset = "0px";
+                      e.target.style.borderColor = "transparent";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.outline = "none";
+                      e.target.style.borderColor = "#e5e7eb";
+                    }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={styles.eyeButton}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "#4b5563"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                style={styles.button}
+                onMouseEnter={(e) => {
+                  e.target.style.background = "#1d4ed8";
+                  e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "#2563eb";
+                  e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                }}
+              >
+                Create Account
+              </button>
+            </form>
+
+            <div style={styles.dividerContainer}>
+              <div style={styles.dividerLine}>
+                <div style={styles.dividerBorder}></div>
+              </div>
+              <div style={styles.dividerTextContainer}>
+                <span style={styles.dividerText}>Or Sign Up With</span>
+              </div>
+            </div>
+
+            <div style={styles.googleButtonContainer}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="outline"
+                size="large"
+                text="signup_with"
+                shape="rectangular"
+                width="100%"
+              />
+            </div>
+
+            <div style={styles.footer}>
+              <span style={styles.footerText}>
+                Already have an account?{" "}
+                <a 
+                  href="/login" 
+                  style={styles.loginLink}
+                  onMouseEnter={(e) => e.target.style.color = "#1d4ed8"}
+                  onMouseLeave={(e) => e.target.style.color = "#2563eb"}
+                >
+                  Sign in
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </GoogleOAuthProvider>
   );
 }
