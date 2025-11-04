@@ -1,0 +1,353 @@
+/* Inventory Manager Layout Styles */
+.inventory-manager-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Loading State */
+.inventory-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(255, 255, 255, 0.3);
+  border-top: 6px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.inventory-loading p {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* Access Denied */
+.access-denied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+  color: white;
+}
+
+.access-denied-content {
+  text-align: center;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.access-denied-content h1 {
+  font-size: 3rem;
+  margin: 0 0 20px 0;
+}
+
+.access-denied-content p {
+  font-size: 1.2rem;
+  margin: 0 0 30px 0;
+  opacity: 0.9;
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: 300px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 90px;
+}
+
+/* Content Header */
+.content-header {
+  background: white;
+  padding: 20px 30px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.breadcrumb-home {
+  font-size: 1.1rem;
+}
+
+.breadcrumb-separator {
+  color: #a0aec0;
+  font-weight: 600;
+}
+
+.breadcrumb-current {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.user-info-header {
+  text-align: right;
+}
+
+.user-welcome {
+  font-size: 1rem;
+  color: #2d3748;
+  margin-bottom: 2px;
+}
+
+.current-time {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+/* Page Content */
+.page-content {
+  flex: 1;
+  padding: 0;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .main-content {
+    margin-left: 90px;
+  }
+  
+  .main-content.sidebar-collapsed {
+    margin-left: 90px;
+  }
+  
+  .content-header {
+    padding: 15px 20px;
+  }
+  
+  .user-info-header {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .main-content.sidebar-collapsed {
+    margin-left: 0;
+  }
+  
+  .content-header {
+    padding: 15px 20px;
+    position: relative;
+  }
+  
+  .content-header::before {
+    content: '☰';
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    color: #4a5568;
+    cursor: pointer;
+  }
+  
+  .breadcrumb {
+    margin-left: 40px;
+  }
+  
+  .mobile-overlay {
+    display: block;
+  }
+  
+  .page-content {
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-header {
+    padding: 12px 15px;
+  }
+  
+  .breadcrumb {
+    margin-left: 35px;
+    font-size: 0.9rem;
+  }
+  
+  .breadcrumb-home {
+    font-size: 1rem;
+  }
+  
+  .user-welcome {
+    font-size: 0.9rem;
+  }
+  
+  .current-time {
+    font-size: 0.8rem;
+  }
+}
+
+/* Scrollbar Styling for Main Content */
+.page-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.page-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.page-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Animation for content transitions */
+.page-content > * {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .inventory-manager-layout {
+    display: block;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .content-header {
+    display: none;
+  }
+  
+  .mobile-overlay {
+    display: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .content-header {
+    border-bottom: 2px solid #000;
+  }
+  
+  .breadcrumb-current {
+    color: #000;
+  }
+  
+  .user-welcome {
+    color: #000;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .main-content,
+  .mobile-overlay,
+  .loading-spinner,
+  .page-content > * {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Focus Management */
+.main-content:focus-within {
+  outline: none;
+}
+
+/* Ensure proper stacking context */
+.content-header {
+  position: relative;
+  z-index: 10;
+}
+
+.page-content {
+  position: relative;
+  z-index: 1;
+}

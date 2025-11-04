@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "init-db": "node scripts/initializeDatabase.js",
+    "seed-data": "node scripts/initializeDatabase.js",
+    "verify-setup": "node scripts/verifySetup.js"
   },
   "keywords": [],
   "author": "",

@@ -19,16 +19,27 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
+    console.log('Login request body:', req.body);
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      console.log('Missing email or password');
+      return res.status(400).json({ msg: "Email and password are required" });
+    }
+    
     const user = await User.findOne({ email });
+    console.log('User found:', user ? user.email : 'Not found');
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log('Login successful for:', user.email);
     res.json({ token, user: { id: user._id, name: user.name, role: user.role } });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ msg: error.message });
   }
 };

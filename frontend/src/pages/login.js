@@ -6,9 +6,26 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await login(form);
-    localStorage.setItem("token", res.data.token);
-    alert("Login successful! Role: " + res.data.user.role);
+    try {
+      console.log('Login form data:', form);
+      const res = await login(form);
+      console.log('Login response:', res.data);
+      localStorage.setItem("token", res.data.token);
+      
+      // Redirect based on role
+      if (res.data.user.role === 'inventory_manager' || res.data.user.role === 'employee') {
+        window.location.href = '/inventory/dashboard';
+      } else if (res.data.user.role === 'admin') {
+        window.location.href = '/inventory/dashboard';
+      } else {
+        alert("Login successful! Role: " + res.data.user.role);
+        window.location.href = '/inventory/dashboard'; // Default to inventory for all users
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response?.data);
+      alert('Login failed: ' + (error.response?.data?.msg || error.response?.data?.message || error.message));
+    }
   };
 
   // CSS styles inside JS
