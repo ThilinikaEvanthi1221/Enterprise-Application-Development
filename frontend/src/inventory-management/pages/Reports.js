@@ -56,8 +56,25 @@ const Reports = () => {
       setReportData(response.data || response);
     } catch (err) {
       console.error('Report fetch error:', err);
-      setError('Failed to fetch report data');
-      setReportData(null);
+      
+      // If backend routes don't exist yet, use mock data
+      if (err.response?.status === 404 || err.message?.includes('404')) {
+        console.log('Using mock data - backend routes not yet implemented');
+        const mockData = {
+          totalParts: 0,
+          lowStockParts: 0,
+          outOfStockParts: 0,
+          inventoryValue: 0,
+          parts: [],
+          transactions: [],
+          categories: []
+        };
+        setReportData(mockData);
+        setError('Backend inventory routes not yet implemented. Showing mock data.');
+      } else {
+        setError('Failed to fetch report data');
+        setReportData(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -243,7 +260,32 @@ const Reports = () => {
     }
 
     if (error) {
-      return <div className="error">{error}</div>;
+      return (
+        <div className="info-banner" style={{ 
+          background: '#fef3c7', 
+          border: '1px solid #fbbf24', 
+          borderRadius: '8px', 
+          padding: '20px', 
+          margin: '20px',
+          color: '#92400e'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
+            <span style={{ fontSize: '24px' }}>⚠️</span>
+            <div>
+              <h3 style={{ margin: '0 0 8px 0', color: '#92400e' }}>Backend Inventory API Not Yet Implemented</h3>
+              <p style={{ margin: '0 0 12px 0' }}>
+                The inventory reports backend routes (e.g., <code>/api/inventory/reports/*</code>) need to be created in the backend server.
+              </p>
+              <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}>
+                To fix this: Create inventory routes in <code>backend/routes/inventoryRoutes.js</code> and implement report controllers.
+              </p>
+              <p style={{ margin: 0, fontSize: '14px', fontStyle: 'italic' }}>
+                Showing mock data with zero values until backend is ready.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
     }
 
     switch (activeReport) {
