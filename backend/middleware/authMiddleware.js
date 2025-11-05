@@ -22,4 +22,22 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
-module.exports = { verifyToken, requireAdmin };
+// Middleware to check if user has one of the required roles
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ msg: "Unauthorized" });
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ msg: `Forbidden: ${roles.join(' or ')} role required` });
+    }
+    return next();
+  };
+};
+
+module.exports = { 
+  verifyToken, 
+  requireAdmin, 
+  authorize,
+  protect: verifyToken // alias for compatibility
+};

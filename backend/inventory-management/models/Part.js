@@ -102,8 +102,7 @@ const partSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for better query performance
-partSchema.index({ partNumber: 1 });
+// Indexes for better query performance (partNumber already has unique index from schema)
 partSchema.index({ category: 1 });
 partSchema.index({ isActive: 1 });
 partSchema.index({ isReorderRequired: 1 });
