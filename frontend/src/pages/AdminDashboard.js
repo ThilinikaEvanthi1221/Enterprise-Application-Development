@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import Layout from "../components/Layout";
 import MetricCard from "../components/MetricCard";
 import { getDashboardMetrics } from "../services/api";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
   // Appointments chart data
   const appointmentsData = [
     { month: "Jan", total: 45, completed: 38 },
@@ -85,6 +88,29 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="p-6 bg-gray-50 min-h-screen">
+        {/* Quick Action Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate("/add-employee")}
+            style={{
+              padding: "12px 24px",
+              background: "#2563eb",
+              color: "white",
+              fontSize: "16px",
+              fontWeight: "600",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+            }}
+            onMouseEnter={(e) => e.target.style.background = "#1d4ed8"}
+            onMouseLeave={(e) => e.target.style.background = "#2563eb"}
+          >
+            + Add New Employee
+          </button>
+        </div>
+
         {/* Metric Cards - Top Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
           <MetricCard 

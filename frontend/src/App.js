@@ -8,7 +8,9 @@ import Signup from "./pages/signup";
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
+import Dashboard from "./pages/Dashboard";
 import Unauthorized from "./pages/Unauthorized";
+import AddEmployee from "./pages/AddEmployee";
 
 import Users from "./pages/Users";
 import Appointments from "./pages/Appointments";
@@ -29,12 +31,30 @@ function App() {
 
         <Route path="/unauthorized" element={<Unauthorized />} />
 
+        {/* Dashboard - Redirects to role-specific dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+
         {/* Admin Routes */}
         <Route
           path="/admin/*"
           element={
             <PrivateRoute allowedRoles={["admin"]}>
               <AdminDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/add-employee"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AddEmployee />
             </PrivateRoute>
           }
         />
