@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { listStaff } = require("../controllers/staffController");
-const authMiddleware = require("../middleware/authMiddleware");
+const { verifyToken } = require("../middleware/authMiddleware");
 
-router.get("/", authMiddleware, listStaff);
+router.get("/", verifyToken, listStaff);
 
 module.exports = router;
 

@@ -22,7 +22,6 @@ import Vehicles from "./pages/Vehicles";
 import TimeLogs from "./pages/TimeLogs";
 import ChatBot from "./pages/ChatBot";
 
-
 function App() {
   return (
     <Router>
@@ -81,6 +80,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/users"
           element={

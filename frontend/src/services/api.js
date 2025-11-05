@@ -30,3 +30,6 @@ export const getDashboardStats = () => API.get("/dashboard/stats");
 export const getAllBookings = () => API.get("/bookings");
 export const getCustomers = () => API.get("/customers");
 export const getStaff = () => API.get("/staff");
+
+// Export the API instance as default for inventory management
+export default API;
