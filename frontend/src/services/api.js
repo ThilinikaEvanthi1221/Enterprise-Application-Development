@@ -30,3 +30,13 @@ export const getDashboardStats = () => API.get("/dashboard/stats");
 export const getAllBookings = () => API.get("/bookings");
 export const getCustomers = () => API.get("/customers");
 export const getStaff = () => API.get("/staff");
+
+export const createVehicle = (payload) => {
+  return API.post(`/vehicles`, payload);
+};
+
+export const getVehicleByNumber = (plateNumber) => {
+  return API.get(`/vehicles/lookup`, {
+    params: { plateNumber }, // sends as /vehicles/lookup?plateNumber=ABC123
+  });
+};

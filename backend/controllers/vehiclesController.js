@@ -11,7 +11,10 @@ exports.listVehicles = async (req, res) => {
 
 exports.getVehicle = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findById(req.params.id).populate("owner", "name email");
+    const vehicle = await Vehicle.findById(req.params.id).populate(
+      "owner",
+      "name email"
+    );
     if (!vehicle) return res.status(404).json({ msg: "Vehicle not found" });
     return res.json(vehicle);
   } catch (err) {
@@ -30,7 +33,9 @@ exports.createVehicle = async (req, res) => {
 
 exports.updateVehicle = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!vehicle) return res.status(404).json({ msg: "Vehicle not found" });
     return res.json(vehicle);
   } catch (err) {
@@ -48,4 +53,15 @@ exports.deleteVehicle = async (req, res) => {
   }
 };
 
-
+// GET /api/vehicles/owner/:userId
+exports.getVehiclesByOwner = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ msg: "userId required" });
+    const vehicles = await Vehicle.find({ owner: userId }).lean();
+    return res.json({ vehicles });
+  } catch (err) {
+    console.error("getVehiclesByOwner error:", err);
+    return res.status(500).json({ msg: "server error" });
+  }
+};
