@@ -1,3 +1,4 @@
+
 # Environment Variables - DO NOT COMMIT
 .env
 .env.local
@@ -5,6 +6,7 @@
 .env.test.local
 .env.production.local
 .env.*.local
+
 backend/.env
 frontend/.env
 
@@ -36,4 +38,14 @@ dist/
 .Trashes
 ehthumbs.db
 Desktop.ini
+
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# OS
+.DS_Store
+
 Thumbs.db
