@@ -12,8 +12,9 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Redirect users based on their role
   const redirectToDashboard = (role) => {
-    switch(role) {
+    switch (role) {
       case "admin":
         navigate("/admin");
         break;
@@ -28,22 +29,27 @@ export default function Login() {
     }
   };
 
+  // Handle manual login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    
+
     try {
       const res = await login(form);
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      redirectToDashboard(res.data.user.role);
+      if (res.data && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        redirectToDashboard(res.data.user.role);
+      }
     } catch (error) {
       setError(error.response?.data?.msg || "Login failed. Please check your credentials.");
+    } finally {
       setLoading(false);
     }
   };
 
+  // Handle Google login success
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const res = await googleLogin({ credential: credentialResponse.credential });
@@ -59,7 +65,7 @@ export default function Login() {
     setError("Google login failed");
   };
 
-  // Inline styles matching the color palette(blue)
+  // Inline styles matching the blue color palette
   const styles = {
     container: {
       minHeight: "100vh",
@@ -67,59 +73,33 @@ export default function Login() {
       alignItems: "center",
       justifyContent: "center",
       padding: "16px",
-      background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+      background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
     },
     wrapper: {
       width: "100%",
-      maxWidth: "448px"
-    },
-    header: {
-      textAlign: "center",
-      marginBottom: "32px"
-    },
-    logoContainer: {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: "80px",
-      height: "80px",
-      background: "white",
-      borderRadius: "16px",
-      marginBottom: "12px",
-      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
-    },
-    title: {
-      color: "white",
-      fontSize: "20px",
-      fontWeight: "bold",
-      letterSpacing: "0.025em"
-    },
-    subtitle: {
-      color: "#bfdbfe",
-      fontSize: "14px",
-      marginTop: "4px"
+      maxWidth: "448px",
     },
     card: {
       background: "white",
       borderRadius: "16px",
       boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-      padding: "32px"
+      padding: "32px",
     },
     heading: {
       fontSize: "24px",
       fontWeight: "bold",
       color: "#1f2937",
       marginBottom: "24px",
-      textAlign: "center"
+      textAlign: "center",
     },
     formGroup: {
-      marginBottom: "16px"
+      marginBottom: "16px",
     },
     label: {
       display: "block",
       fontSize: "14px",
       color: "#4b5563",
-      marginBottom: "6px"
+      marginBottom: "6px",
     },
     input: {
       width: "100%",
@@ -129,16 +109,10 @@ export default function Login() {
       fontSize: "15px",
       outline: "none",
       transition: "all 0.15s",
-      boxSizing: "border-box"
-    },
-    inputFocus: {
-      outline: "none",
-      ring: "2px",
-      ringColor: "#3b82f6",
-      borderColor: "transparent"
+      boxSizing: "border-box",
     },
     passwordContainer: {
-      position: "relative"
+      position: "relative",
     },
     eyeButton: {
       position: "absolute",
@@ -151,19 +125,19 @@ export default function Login() {
       color: "#9ca3af",
       padding: "4px",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     rememberRow: {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       fontSize: "14px",
-      marginBottom: "16px"
+      marginBottom: "16px",
     },
     checkboxLabel: {
       display: "flex",
       alignItems: "center",
-      cursor: "pointer"
+      cursor: "pointer",
     },
     checkbox: {
       width: "16px",
@@ -171,16 +145,16 @@ export default function Login() {
       color: "#2563eb",
       borderColor: "#d1d5db",
       borderRadius: "4px",
-      cursor: "pointer"
+      cursor: "pointer",
     },
     checkboxText: {
       marginLeft: "8px",
-      color: "#4b5563"
+      color: "#4b5563",
     },
     forgotLink: {
       color: "#2563eb",
       textDecoration: "none",
-      fontWeight: "500"
+      fontWeight: "500",
     },
     button: {
       width: "100%",
@@ -193,50 +167,50 @@ export default function Login() {
       borderRadius: "8px",
       cursor: "pointer",
       transition: "all 0.2s",
-      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
     },
     dividerContainer: {
       position: "relative",
-      margin: "24px 0"
+      margin: "24px 0",
     },
     dividerLine: {
       position: "absolute",
       inset: "0",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     dividerBorder: {
       width: "100%",
-      borderTop: "1px solid #e5e7eb"
+      borderTop: "1px solid #e5e7eb",
     },
     dividerTextContainer: {
       position: "relative",
       display: "flex",
       justifyContent: "center",
-      fontSize: "14px"
+      fontSize: "14px",
     },
     dividerText: {
       padding: "0 16px",
       background: "white",
-      color: "#6b7280"
+      color: "#6b7280",
     },
     googleButtonContainer: {
       display: "flex",
       justifyContent: "center",
-      marginBottom: "24px"
+      marginBottom: "24px",
     },
     footer: {
       textAlign: "center",
-      marginTop: "24px"
+      marginTop: "24px",
     },
     footerText: {
       color: "#4b5563",
-      fontSize: "14px"
+      fontSize: "14px",
     },
     signupLink: {
       color: "#2563eb",
       textDecoration: "none",
-      fontWeight: "600"
+      fontWeight: "600",
     },
     errorText: {
       color: "#dc2626",
@@ -245,8 +219,8 @@ export default function Login() {
       padding: "12px",
       background: "#fee2e2",
       borderRadius: "8px",
-      textAlign: "center"
-    }
+      textAlign: "center",
+    },
   };
 
   return (
@@ -267,15 +241,6 @@ export default function Login() {
                   placeholder="Enter your email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  onFocus={(e) => {
-                    e.target.style.outline = "2px solid #3b82f6";
-                    e.target.style.outlineOffset = "0px";
-                    e.target.style.borderColor = "transparent";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.outline = "none";
-                    e.target.style.borderColor = "#e5e7eb";
-                  }}
                   required
                 />
               </div>
@@ -285,27 +250,16 @@ export default function Login() {
                 <div style={styles.passwordContainer}>
                   <input
                     type={showPassword ? "text" : "password"}
-                    style={{...styles.input, paddingRight: "48px"}}
+                    style={{ ...styles.input, paddingRight: "48px" }}
                     placeholder="Enter your password"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    onFocus={(e) => {
-                      e.target.style.outline = "2px solid #3b82f6";
-                      e.target.style.outlineOffset = "0px";
-                      e.target.style.borderColor = "transparent";
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.outline = "none";
-                      e.target.style.borderColor = "#e5e7eb";
-                    }}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     style={styles.eyeButton}
-                    onMouseEnter={(e) => e.currentTarget.style.color = "#4b5563"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = "#9ca3af"}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -322,12 +276,7 @@ export default function Login() {
                   />
                   <span style={styles.checkboxText}>Remember me</span>
                 </label>
-                <a 
-                  href="#" 
-                  style={styles.forgotLink}
-                  onMouseEnter={(e) => e.target.style.color = "#1d4ed8"}
-                  onMouseLeave={(e) => e.target.style.color = "#2563eb"}
-                >
+                <a href="#" style={styles.forgotLink}>
                   Forgot Password?
                 </a>
               </div>
@@ -336,18 +285,6 @@ export default function Login() {
                 type="submit"
                 style={styles.button}
                 disabled={loading}
-                onMouseEnter={(e) => {
-                  if (!loading) {
-                    e.target.style.background = "#1d4ed8";
-                    e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!loading) {
-                    e.target.style.background = "#2563eb";
-                    e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
-                  }
-                }}
               >
                 {loading ? "Signing in..." : "Sign in with email"}
               </button>
@@ -377,12 +314,7 @@ export default function Login() {
             <div style={styles.footer}>
               <span style={styles.footerText}>
                 Don't have an account?{" "}
-                <a 
-                  href="/signup" 
-                  style={styles.signupLink}
-                  onMouseEnter={(e) => e.target.style.color = "#1d4ed8"}
-                  onMouseLeave={(e) => e.target.style.color = "#2563eb"}
-                >
+                <a href="/signup" style={styles.signupLink}>
                   Sign up
                 </a>
               </span>
