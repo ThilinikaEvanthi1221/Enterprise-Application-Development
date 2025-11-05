@@ -14,3 +14,4 @@ API.interceptors.request.use((config) => {
 export const signup = (data) => API.post("/auth/signup", data);
 export const login = (data) => API.post("/auth/login", data);
 export const getDashboardStats = () => API.get("/dashboard/stats");
+export const getAllBookings = () => API.get("/bookings");
