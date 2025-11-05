@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { signup, googleLogin } from "../services/api";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff } from "lucide-react";
@@ -6,14 +7,23 @@ import { Eye, EyeOff } from "lucide-react";
 export default function Signup() {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "customer" });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+    
     try {
       const res = await signup(form);
-      alert(res.data.msg);
-    } catch (error) {
-      alert("Signup failed: " + (error.response?.data?.msg || error.message));
+      // Signup successful, redirect to login
+      alert("Account created successfully! Please login.");
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Signup failed. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -21,14 +31,16 @@ export default function Signup() {
     try {
       const res = await googleLogin({ credential: credentialResponse.credential });
       localStorage.setItem("token", res.data.token);
-      alert("Google Signup successful! Role: " + res.data.user.role);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      // Redirect to customer dashboard
+      navigate("/dashboard");
     } catch (error) {
-      alert("Google signup failed: " + (error.response?.data?.msg || error.message));
+      setError("Google signup failed: " + (error.response?.data?.msg || error.message));
     }
   };
 
   const handleGoogleError = () => {
-    alert("Google signup failed");
+    setError("Google signup failed");
   };
 
   // Inline styles matching the login page (blue)
@@ -175,6 +187,15 @@ export default function Signup() {
       color: "#2563eb",
       textDecoration: "none",
       fontWeight: "600"
+    },
+    errorText: {
+      color: "#dc2626",
+      fontSize: "14px",
+      marginBottom: "16px",
+      padding: "12px",
+      background: "#fee2e2",
+      borderRadius: "8px",
+      textAlign: "center"
     }
   };
 
@@ -184,6 +205,12 @@ export default function Signup() {
         <div style={styles.wrapper}>
           <div style={styles.card}>
             <h2 style={styles.heading}>Create your account</h2>
+            
+            <p style={{textAlign: "center", color: "#6b7280", fontSize: "14px", marginBottom: "20px"}}>
+              Join as a customer to book vehicle services
+            </p>
+
+            {error && <div style={styles.errorText}>{error}</div>}
 
             <form onSubmit={handleSubmit}>
               <div style={styles.formGroup}>
@@ -263,16 +290,21 @@ export default function Signup() {
               <button
                 type="submit"
                 style={styles.button}
+                disabled={loading}
                 onMouseEnter={(e) => {
-                  e.target.style.background = "#1d4ed8";
-                  e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                  if (!loading) {
+                    e.target.style.background = "#1d4ed8";
+                    e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = "#2563eb";
-                  e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                  if (!loading) {
+                    e.target.style.background = "#2563eb";
+                    e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                  }
                 }}
               >
-                Create Account
+                {loading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
 

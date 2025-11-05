@@ -1,187 +1,222 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import Layout from "../components/Layout";
+import MetricCard from "../components/MetricCard";
+import { getDashboardMetrics } from "../services/api";
 
-export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState({});
-
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user") || "{}");
-    setUser(userData);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
-  const styles = {
-    container: {
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
-    },
-    header: {
-      background: "white",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      padding: "16px 32px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    },
-    title: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      color: "#1e3a8a"
-    },
-    userInfo: {
-      display: "flex",
-      alignItems: "center",
-      gap: "16px"
-    },
-    badge: {
-      background: "#dc2626",
-      color: "white",
-      padding: "4px 12px",
-      borderRadius: "12px",
-      fontSize: "12px",
-      fontWeight: "600"
-    },
-    logoutBtn: {
-      background: "#2563eb",
-      color: "white",
-      border: "none",
-      padding: "8px 16px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "600"
-    },
-    content: {
-      padding: "32px",
-      maxWidth: "1200px",
-      margin: "0 auto"
-    },
-    card: {
-      background: "white",
-      borderRadius: "16px",
-      padding: "24px",
-      marginBottom: "24px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-    },
-    cardTitle: {
-      fontSize: "20px",
-      fontWeight: "bold",
-      color: "#1f2937",
-      marginBottom: "16px"
-    },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-      gap: "16px",
-      marginBottom: "24px"
-    },
-    statCard: {
-      background: "white",
-      borderRadius: "12px",
-      padding: "20px",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      borderLeft: "4px solid #2563eb"
-    },
-    statLabel: {
-      color: "#6b7280",
-      fontSize: "14px",
-      marginBottom: "8px"
-    },
-    statValue: {
-      fontSize: "32px",
-      fontWeight: "bold",
-      color: "#1f2937"
-    },
-    menuList: {
-      listStyle: "none",
-      padding: 0
-    },
-    menuItem: {
-      padding: "12px 16px",
-      marginBottom: "8px",
-      background: "#f3f4f6",
-      borderRadius: "8px",
-      cursor: "pointer",
-      transition: "all 0.2s"
-    }
-  };
-
-  const menuItems = [
-    { name: "Manage Users", path: "/admin/users" },
-    { name: "Manage Employees", path: "/admin/employees" },
-    { name: "Manage Customers", path: "/admin/customers" },
-    { name: "Manage Services", path: "/admin/services" },
-    { name: "View Appointments", path: "/admin/appointments" },
-    { name: "View Vehicles", path: "/admin/vehicles" },
-    { name: "System Settings", path: "/admin/settings" }
+const Dashboard = () => {
+  // Appointments chart data
+  const appointmentsData = [
+    { month: "Jan", total: 45, completed: 38 },
+    { month: "Feb", total: 52, completed: 46 },
+    { month: "Mar", total: 48, completed: 42 },
+    { month: "Apr", total: 61, completed: 55 },
+    { month: "May", total: 58, completed: 52 },
+    { month: "Jun", total: 65, completed: 60 },
+    { month: "Jul", total: 72, completed: 68 },
   ];
 
+  // Time Logs weekly data
+  const timeLogsData = [
+    { day: "24 Jan", hours: 8.5 },
+    { day: "25 Jan", hours: 9.2 },
+    { day: "26 Jan", hours: 7.8 },
+    { day: "27 Jan", hours: 10.0 },
+    { day: "28 Jan", hours: 8.5 },
+    { day: "29 Jan", hours: 9.5 },
+    { day: "30 Jan", hours: 8.0 },
+  ];
+
+  const [totals, setTotals] = useState({ users: 0, vehicles: 0, services: 0, appointments: 0, timeLogs: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        const { data } = await getDashboardMetrics();
+        if (isMounted && data && data.totals) {
+          setTotals(data.totals);
+          setError("");
+        }
+      } catch (e) {
+        if (isMounted) {
+          if (e.response?.status === 401) {
+            setError("Unauthorized. Please login again.");
+            // Clear invalid token and redirect to login
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+          } else {
+            setError("Failed to load dashboard metrics: " + (e.response?.data?.msg || e.message));
+          }
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+          <div className="text-lg">Loading dashboard data...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error && !error.includes("Unauthorized")) {
+    return (
+      <Layout>
+        <div className="p-6 bg-gray-50 min-h-screen">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Admin Dashboard</h1>
-        <div style={styles.userInfo}>
-          <span style={styles.badge}>ADMIN</span>
-          <span>{user.name}</span>
-          <button 
-            style={styles.logoutBtn}
-            onClick={handleLogout}
-            onMouseEnter={(e) => e.target.style.background = "#1d4ed8"}
-            onMouseLeave={(e) => e.target.style.background = "#2563eb"}
-          >
-            Logout
-          </button>
-        </div>
-      </header>
-
-      <div style={styles.content}>
-        <div style={styles.grid}>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Total Users</div>
-            <div style={styles.statValue}>--</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Total Employees</div>
-            <div style={styles.statValue}>--</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Total Customers</div>
-            <div style={styles.statValue}>--</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Total Appointments</div>
-            <div style={styles.statValue}>--</div>
-          </div>
+    <Layout>
+      <div className="p-6 bg-gray-50 min-h-screen">
+        {/* Metric Cards - Top Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
+          <MetricCard 
+            title="Total Users"
+            value={String(totals.users)}
+            change="+5.2%"
+            trend="up"
+            iconType="👥"
+          />
+          <MetricCard 
+            title="Total Vehicles"
+            value={String(totals.vehicles)}
+            change="+2.1%"
+            trend="up"
+            iconType="🚗"
+          />
+          <MetricCard 
+            title="Total Appointments"
+            value={String(totals.appointments)}
+            change="+12.5%"
+            trend="up"
+            iconType="📅"
+          />
         </div>
 
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Quick Actions</h2>
-          <ul style={styles.menuList}>
-            {menuItems.map((item, index) => (
-              <li 
-                key={index}
-                style={styles.menuItem}
-                onClick={() => navigate(item.path)}
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#2563eb";
-                  e.target.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                  e.target.style.color = "black";
-                }}
-              >
-                {item.name}
-              </li>
-            ))}
-          </ul>
+        {/* Metric Cards - Second Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <MetricCard 
+            title="Total Services"
+            value={String(totals.services)}
+            change="+3.0%"
+            trend="up"
+            iconType="🔧"
+          />
+          <MetricCard 
+            title="Hours Logged"
+            value={String(totals.timeLogs)}
+            change="+8.2%"
+            trend="up"
+            iconType="⏱️"
+          />
+          <MetricCard 
+            title="ChatBot Queries"
+            value={"-"}
+            change="+15.3%"
+            trend="up"
+            iconType="💬"
+          />
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Appointments Chart */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">Appointments Overview</h3>
+                <p className="text-sm text-gray-500">Last 7 months</p>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                  <span className="text-xs text-gray-600">Total</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-300"></div>
+                  <span className="text-xs text-gray-600">Completed</span>
+                </div>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={appointmentsData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
+                <YAxis stroke="#6b7280" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="total" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  dot={{ fill: '#3b82f6', r: 4 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="completed" 
+                  stroke="#60a5fa" 
+                  strokeWidth={2}
+                  dot={{ fill: '#60a5fa', r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Time Logs Chart */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">Time Logs (Weekly)</h3>
+              <p className="text-sm text-gray-500">Hours logged per day</p>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={timeLogsData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="day" stroke="#6b7280" fontSize={12} />
+                <YAxis stroke="#6b7280" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <Bar 
+                  dataKey="hours" 
+                  fill="#3b82f6" 
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
-}
+};
+
+export default Dashboard;

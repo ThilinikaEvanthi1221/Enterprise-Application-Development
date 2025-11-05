@@ -10,7 +10,6 @@ import EmployeeDashboard from "./pages/EmployeeDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import Unauthorized from "./pages/Unauthorized";
 
-import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Appointments from "./pages/Appointments";
 import Services from "./pages/Services";
@@ -56,12 +55,6 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["customer"]}>
               <CustomerDashboard />
-
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
             </PrivateRoute>
           }
         />
