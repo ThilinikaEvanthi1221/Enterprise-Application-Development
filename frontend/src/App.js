@@ -4,11 +4,11 @@ import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
+import Dashboard from "./pages/Dashboard";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
-import Dashboard from "./pages/Dashboard";
 import Unauthorized from "./pages/Unauthorized";
 import AddEmployee from "./pages/AddEmployee";
 
@@ -123,7 +123,6 @@ function App() {
           element={
             <PrivateRoute>
               <ChatBot />
-
             </PrivateRoute>
           }
         />

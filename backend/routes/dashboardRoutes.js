@@ -1,13 +1,10 @@
 const express = require("express");
-const { verifyToken, requireAdmin } = require("../middleware/authMiddleware");
-const { getMetrics } = require("../controllers/dashboardController");
-
 const router = express.Router();
+const { getDashboardStats } = require("../controllers/dashboardController");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.use(verifyToken, requireAdmin);
-
-router.get("/metrics", getMetrics);
+// All dashboard routes require authentication
+router.get("/stats", authMiddleware, getDashboardStats);
 
 module.exports = router;
-
 
