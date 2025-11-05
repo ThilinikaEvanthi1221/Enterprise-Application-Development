@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { login, googleLogin } from "../services/api";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff } from "lucide-react";
@@ -7,15 +8,25 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+    
     try {
       const res = await login(form);
-      localStorage.setItem("token", res.data.token);
-      alert("Login successful! Role: " + res.data.user.role);
-    } catch (error) {
-      alert("Login failed: " + (error.response?.data?.msg || error.message));
+      if (res.data && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      setError(err.response?.data?.msg || "Login failed. Please check your credentials.");
+      setLoading(false);
     }
   };
 
@@ -23,14 +34,15 @@ export default function Login() {
     try {
       const res = await googleLogin({ credential: credentialResponse.credential });
       localStorage.setItem("token", res.data.token);
-      alert("Google Login successful! Role: " + res.data.user.role);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      navigate("/dashboard");
     } catch (error) {
-      alert("Google login failed: " + (error.response?.data?.msg || error.message));
+      setError("Google login failed: " + (error.response?.data?.msg || error.message));
     }
   };
 
   const handleGoogleError = () => {
-    alert("Google login failed");
+    setError("Google login failed");
   };
 
   // Inline styles matching the color palette(blue)
@@ -46,32 +58,6 @@ export default function Login() {
     wrapper: {
       width: "100%",
       maxWidth: "448px"
-    },
-    header: {
-      textAlign: "center",
-      marginBottom: "32px"
-    },
-    logoContainer: {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: "80px",
-      height: "80px",
-      background: "white",
-      borderRadius: "16px",
-      marginBottom: "12px",
-      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
-    },
-    title: {
-      color: "white",
-      fontSize: "20px",
-      fontWeight: "bold",
-      letterSpacing: "0.025em"
-    },
-    subtitle: {
-      color: "#bfdbfe",
-      fontSize: "14px",
-      marginTop: "4px"
     },
     card: {
       background: "white",
@@ -104,12 +90,6 @@ export default function Login() {
       outline: "none",
       transition: "all 0.15s",
       boxSizing: "border-box"
-    },
-    inputFocus: {
-      outline: "none",
-      ring: "2px",
-      ringColor: "#3b82f6",
-      borderColor: "transparent"
     },
     passwordContainer: {
       position: "relative"
@@ -211,6 +191,15 @@ export default function Login() {
       color: "#2563eb",
       textDecoration: "none",
       fontWeight: "600"
+    },
+    errorText: {
+      color: "#dc2626",
+      fontSize: "14px",
+      marginBottom: "16px",
+      padding: "12px",
+      background: "#fee2e2",
+      borderRadius: "8px",
+      textAlign: "center"
     }
   };
 
@@ -220,6 +209,8 @@ export default function Login() {
         <div style={styles.wrapper}>
           <div style={styles.card}>
             <h2 style={styles.heading}>Login to your account</h2>
+
+            {error && <div style={styles.errorText}>{error}</div>}
 
             <form onSubmit={handleSubmit}>
               <div style={styles.formGroup}>
@@ -298,16 +289,21 @@ export default function Login() {
               <button
                 type="submit"
                 style={styles.button}
+                disabled={loading}
                 onMouseEnter={(e) => {
-                  e.target.style.background = "#1d4ed8";
-                  e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                  if (!loading) {
+                    e.target.style.background = "#1d4ed8";
+                    e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = "#2563eb";
-                  e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                  if (!loading) {
+                    e.target.style.background = "#2563eb";
+                    e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                  }
                 }}
               >
-                Sign in with email
+                {loading ? "Signing in..." : "Sign in with email"}
               </button>
             </form>
 

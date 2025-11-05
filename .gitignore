@@ -1,10 +1,44 @@
-# Environment variables
+
+# Environment Variables - DO NOT COMMIT
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
 backend/.env
 frontend/.env
 
 # Dependencies
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build outputs
+build/
+dist/
+*.log
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
 
 # Logs
 *.log
@@ -13,4 +47,5 @@ yarn-debug.log*
 
 # OS
 .DS_Store
+
 Thumbs.db
