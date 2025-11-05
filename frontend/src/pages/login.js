@@ -1,21 +1,46 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { login, googleLogin } from "../services/api";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const redirectToDashboard = (role) => {
+    switch(role) {
+      case "admin":
+        navigate("/admin");
+        break;
+      case "employee":
+        navigate("/employee");
+        break;
+      case "customer":
+        navigate("/customer");
+        break;
+      default:
+        navigate("/");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+    
     try {
       const res = await login(form);
       localStorage.setItem("token", res.data.token);
-      alert("Login successful! Role: " + res.data.user.role);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      redirectToDashboard(res.data.user.role);
     } catch (error) {
-      alert("Login failed: " + (error.response?.data?.msg || error.message));
+      setError(error.response?.data?.msg || "Login failed. Please check your credentials.");
+      setLoading(false);
     }
   };
 
@@ -23,14 +48,15 @@ export default function Login() {
     try {
       const res = await googleLogin({ credential: credentialResponse.credential });
       localStorage.setItem("token", res.data.token);
-      alert("Google Login successful! Role: " + res.data.user.role);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      redirectToDashboard(res.data.user.role);
     } catch (error) {
-      alert("Google login failed: " + (error.response?.data?.msg || error.message));
+      setError("Google login failed: " + (error.response?.data?.msg || error.message));
     }
   };
 
   const handleGoogleError = () => {
-    alert("Google login failed");
+    setError("Google login failed");
   };
 
   // Inline styles matching the color palette(blue)
@@ -211,6 +237,15 @@ export default function Login() {
       color: "#2563eb",
       textDecoration: "none",
       fontWeight: "600"
+    },
+    errorText: {
+      color: "#dc2626",
+      fontSize: "14px",
+      marginBottom: "16px",
+      padding: "12px",
+      background: "#fee2e2",
+      borderRadius: "8px",
+      textAlign: "center"
     }
   };
 
@@ -220,6 +255,8 @@ export default function Login() {
         <div style={styles.wrapper}>
           <div style={styles.card}>
             <h2 style={styles.heading}>Login to your account</h2>
+
+            {error && <div style={styles.errorText}>{error}</div>}
 
             <form onSubmit={handleSubmit}>
               <div style={styles.formGroup}>
@@ -298,16 +335,21 @@ export default function Login() {
               <button
                 type="submit"
                 style={styles.button}
+                disabled={loading}
                 onMouseEnter={(e) => {
-                  e.target.style.background = "#1d4ed8";
-                  e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                  if (!loading) {
+                    e.target.style.background = "#1d4ed8";
+                    e.target.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = "#2563eb";
-                  e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                  if (!loading) {
+                    e.target.style.background = "#2563eb";
+                    e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                  }
                 }}
               >
-                Sign in with email
+                {loading ? "Signing in..." : "Sign in with email"}
               </button>
             </form>
 
