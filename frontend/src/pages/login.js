@@ -33,7 +33,7 @@ export default function Login() {
     alert("Google login failed");
   };
 
-  // Inline styles matching the color palette
+  // Inline styles matching the color palette(blue)
   const styles = {
     container: {
       minHeight: "100vh",
