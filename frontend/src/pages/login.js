@@ -1,14 +1,22 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/api";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await login(form);
-    localStorage.setItem("token", res.data.token);
-    alert("Login successful! Role: " + res.data.user.role);
+    try {
+      setError("");
+      const res = await login(form);
+      localStorage.setItem("token", res.data.token);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Login failed. Please try again.");
+    }
   };
 
   // CSS styles inside JS
@@ -58,15 +66,18 @@ export default function Login() {
     <div style={styles.container}>
       <form style={styles.form} onSubmit={handleSubmit}>
         <h2 style={styles.heading}>Login</h2>
+        {error && <div style={{ color: "#ef4444", fontSize: "14px", marginBottom: "10px" }}>{error}</div>}
         <input
           style={styles.input}
           placeholder="Email"
+          value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
         />
         <input
           style={styles.input}
           type="password"
           placeholder="Password"
+          value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
         <button
@@ -77,6 +88,12 @@ export default function Login() {
         >
           Login
         </button>
+        <div style={{ textAlign: "center", marginTop: "10px", fontSize: "14px", color: "#6b7280" }}>
+          Don't have an account?{" "}
+          <Link to="/signup" style={{ color: "#007bff", textDecoration: "none", fontWeight: "500" }}>
+            Signup here
+          </Link>
+        </div>
       </form>
     </div>
   );
