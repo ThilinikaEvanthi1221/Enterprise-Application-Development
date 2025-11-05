@@ -25,11 +25,50 @@ exports.getAppointment = async (req, res) => {
   }
 };
 
+const { sendEmail } = require('../utils/emailService');
+
 exports.createAppointment = async (req, res) => {
   try {
     const item = await Appointment.create(req.body);
-    return res.status(201).json(item);
+    
+    // Populate necessary fields for email
+    const populatedAppointment = await Appointment.findById(item._id)
+      .populate('user', 'name email')
+      .populate('vehicle')
+      .populate('service');
+
+    // Send confirmation email
+    await sendEmail(
+      populatedAppointment.user.email,
+      'bookingConfirmation',
+      {
+        user: {
+          name: populatedAppointment.user.name
+        },
+        details: {
+          serviceName: populatedAppointment.service.name,
+          vehicleDetails: `${populatedAppointment.vehicle.make} ${populatedAppointment.vehicle.model}`,
+          date: populatedAppointment.date,
+          time: populatedAppointment.time
+        }
+      }
+    );
+
+    // Create initial progress log
+    const ProgressLog = require('../models/progressLog');
+    await ProgressLog.create({
+      serviceId: populatedAppointment.service._id,
+      vehicleId: populatedAppointment.vehicle._id,
+      customerId: populatedAppointment.user._id,
+      updatedBy: req.user.id,
+      status: 'Pending',
+      progress: 0,
+      notes: 'Appointment scheduled'
+    });
+
+    return res.status(201).json(populatedAppointment);
   } catch (err) {
+    console.error('Error creating appointment:', err);
     return res.status(500).json({ msg: err.message });
   }
 };

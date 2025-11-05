@@ -18,6 +18,7 @@ import Services from "./pages/Services";
 import Vehicles from "./pages/Vehicles";
 import TimeLogs from "./pages/TimeLogs";
 import ChatBot from "./pages/ChatBot";
+import ProgressDashboard from "./pages/ProgressDashboard";
 
 
 function App() {
@@ -124,6 +125,14 @@ function App() {
             <PrivateRoute>
               <ChatBot />
 
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <PrivateRoute>
+              <ProgressDashboard />
             </PrivateRoute>
           }
         />
