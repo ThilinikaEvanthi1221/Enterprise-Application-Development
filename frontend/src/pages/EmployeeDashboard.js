@@ -89,13 +89,8 @@ export default function EmployeeDashboard() {
     navigate("/login");
   };
 
-  if (loading) {
-    return (
-      <div className="dashboard-container">
-        <div className="loading">Loading...</div>
-      </div>
-    );
-  }
+  // Removed global loading check - render UI immediately
+  // Only show loading in specific content areas
 
   return (
     <div className="dashboard-container">
@@ -221,6 +216,17 @@ export default function EmployeeDashboard() {
 
 // Dashboard Home Component (the main dashboard view)
 function DashboardHome({ stats, formatDate, getStatusColor }) {
+  // Simple loading state - stats will be empty on first render
+  const isLoading = stats.recentBookings === undefined || stats.totalProjects === undefined;
+  
+  if (isLoading) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+        <div style={{ fontSize: '18px' }}>Loading dashboard data...</div>
+      </div>
+    );
+  }
+  
   return (
     <>
       {/* Dashboard Stats */}

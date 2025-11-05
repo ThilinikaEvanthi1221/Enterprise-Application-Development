@@ -35,12 +35,7 @@ export default function Customers() {
     return true;
   });
 
-  if (loading) {
-    return <div style={{ padding: 24 }}>Loading...</div>;
-  }
-
-  // No logout button on this page (to match Bookings page)
-
+  // Remove full-page loading - render UI immediately
   return (
     <>
       {/* Filters Row */}
@@ -59,6 +54,12 @@ export default function Customers() {
           </div>
         </div>
 
+      {loading ? (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+          Loading customers...
+        </div>
+      ) : (
+        <>
         {/* Full-width search with Filters button */}
         <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, marginBottom: 20 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -122,6 +123,8 @@ export default function Customers() {
           </table>
           </div>
         </div>
+        </>
+      )}
     </>
   );
 }

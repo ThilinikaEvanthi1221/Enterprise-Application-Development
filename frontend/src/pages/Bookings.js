@@ -135,14 +135,7 @@ export default function Bookings() {
     else setView("week");
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading">Loading...</div>
-      </div>
-    );
-  }
-
+  // Remove full-page loading - render UI immediately
   return (
     <>
       {/* Bookings Table */}
@@ -150,6 +143,11 @@ export default function Bookings() {
           <div className="section-header">
             <h2>All Bookings</h2>
           </div>
+          {loading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+              Loading bookings...
+            </div>
+          ) : (
           <div className="bookings-table-container">
             <table className="bookings-table">
               <thead>
@@ -194,6 +192,7 @@ export default function Bookings() {
               </tbody>
             </table>
           </div>
+          )}
         </div>
 
         {/* Calendar View */}

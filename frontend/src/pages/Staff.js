@@ -47,8 +47,7 @@ export default function Staff() {
     return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
-  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
-
+  // Remove full-page loading - render UI immediately
   return (
     <>
       {/* Filters Row */}
@@ -67,6 +66,11 @@ export default function Staff() {
         </div>
       </div>
 
+      {loading ? (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+          Loading staff...
+        </div>
+      ) : (
       <div className="recent-bookings">
           <div className="bookings-header">
             <h2>Employee List</h2>
@@ -103,6 +107,7 @@ export default function Staff() {
             </table>
           </div>
         </div>
+      )}
       </>
     );
   }
