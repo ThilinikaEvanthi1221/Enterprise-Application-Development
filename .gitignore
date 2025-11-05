@@ -1,4 +1,3 @@
-
 # Environment Variables - DO NOT COMMIT
 .env
 .env.local
@@ -11,11 +10,12 @@ backend/.env
 frontend/.env
 
 # Dependencies
-node_modules/
+**/node_modules/
+**/node_modules/**
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
+**/package-lock.json
 yarn.lock
 
 # Build outputs

@@ -3,9 +3,20 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
+const http = require("http");
+const { Server } = require("socket.io");
+const setupSocketIO = require("./config/socketio");
 const connectDB = require("./config/db");
 const Admin = require("./models/admin");
 const { runMigrations, isAutoMigrationEnabled } = require("./utils/runMigrations");
+
+// Import controllers that need Socket.IO
+const progressController = require("./controllers/progressController");
+const notificationController = require("./controllers/notificationController");
+
+// Import routes
+const progressRoutes = require("./routes/progressRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 
@@ -59,10 +70,30 @@ dotenv.config();
 })();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+// Setup Socket.IO with authentication
+setupSocketIO(io);
+
+// Inject Socket.IO instance into controllers
+progressController.setIO(io);
+notificationController.setIO(io);
+
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// API Routes
+app.use("/api/progress", progressRoutes);
+app.use("/api/notifications", notificationRoutes);
+
+// Auth and User Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/vehicles", require("./routes/vehicleRoutes"));
@@ -72,4 +103,4 @@ app.use("/api/time-logs", require("./routes/timeLogRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
