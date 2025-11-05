@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { getDashboardStats } from "../services/api";
 import "./Dashboard.css";
 
@@ -16,20 +16,23 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in
+    // Check if user is logged in (optional - dashboard can work without token for testing)
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    // Decode token to get user info (simple decode, not verifying)
-    try {
-      const tokenParts = token.split(".");
-      const payload = JSON.parse(atob(tokenParts[1]));
-      setUser({ name: "Cody Fisher", role: payload.role || "employee" });
-    } catch (e) {
-      console.error("Error decoding token:", e);
+    
+    if (token) {
+      // Decode token to get user info (simple decode, not verifying)
+      try {
+        const tokenParts = token.split(".");
+        const payload = JSON.parse(atob(tokenParts[1]));
+        setUser({ name: "Jason Miller", role: payload.role || "employee" });
+      } catch (e) {
+        console.error("Error decoding token:", e);
+        // Set default user if token decode fails
+        setUser({ name: "Jason Miller", role: "employee" });
+      }
+    } else {
+      // Set default user if no token (for testing/development)
+      setUser({ name: "Jason Miller", role: "employee" });
     }
 
     // Fetch dashboard data
@@ -43,9 +46,10 @@ export default function Dashboard() {
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+      // Handle 401 error but don't redirect (login route removed)
       if (error.response?.status === 401) {
+        console.warn("Authentication required. Please login to see dashboard data.");
         localStorage.removeItem("token");
-        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -76,7 +80,8 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    // Refresh the page to reload dashboard
+    window.location.reload();
   };
 
   if (loading) {
@@ -98,36 +103,36 @@ export default function Dashboard() {
           </div>
         </div>
         <nav className="sidebar-nav">
-          <a href="#dashboard" className="nav-item active">
+          <Link to="/dashboard" className="nav-item active">
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
             Dashboard
-          </a>
-          <a href="#bookings" className="nav-item">
+          </Link>
+          <Link to="/bookings" className="nav-item">
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Bookings
-          </a>
-          <a href="#customers" className="nav-item">
+          </Link>
+          <Link to="/customers" className="nav-item">
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
             Customers
-          </a>
+          </Link>
           <a href="#inventory" className="nav-item">
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
             Inventory
           </a>
-          <a href="#staff" className="nav-item">
+          <Link to="/staff" className="nav-item">
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             Staff Management
-          </a>
+          </Link>
           <a href="#notifications" className="nav-item">
             <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -171,7 +176,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="user-profile">
-              <div className="avatar">CF</div>
+              <div className="avatar">JM</div>
               <div className="user-info">
                 <span className="user-name">{user?.name || "Employee"}</span>
                 <span className="user-role">{user?.role === "employee" ? "Employee" : "Owner"}</span>
