@@ -31,7 +31,7 @@ export default function Signup() {
     alert("Google signup failed");
   };
 
-  // Inline styles matching the login page
+  // Inline styles matching the login page (blue)
   const styles = {
     container: {
       minHeight: "100vh",
