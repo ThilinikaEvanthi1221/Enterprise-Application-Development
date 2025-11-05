@@ -26,3 +26,4 @@ export const getServices = () => API.get("/services");
 export const getAppointments = () => API.get("/appointments");
 export const getTimeLogs = () => API.get("/time-logs");
 export const getDashboardMetrics = () => API.get("/dashboard/metrics");
+export const getDashboardStats = () => API.get("/dashboard/stats");
