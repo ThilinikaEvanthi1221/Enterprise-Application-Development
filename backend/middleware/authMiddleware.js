@@ -22,4 +22,4 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
-module.exports = { verifyToken, requireAdmin };
+module.exports = { authMiddleware: verifyToken, requireAdmin };
