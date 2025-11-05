@@ -15,6 +15,7 @@ API.interceptors.request.use((config) => {
 // Auth
 export const signup = (data) => API.post("/auth/signup", data);
 export const login = (data) => API.post("/auth/login", data);
+export const googleLogin = (data) => API.post("/auth/google", data);
 
 // Admin - Fetchers
 export const getUsers = () => API.get("/users");
@@ -25,4 +26,3 @@ export const getServices = () => API.get("/services");
 export const getAppointments = () => API.get("/appointments");
 export const getTimeLogs = () => API.get("/time-logs");
 export const getDashboardMetrics = () => API.get("/dashboard/metrics");
-

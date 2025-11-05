@@ -5,6 +5,8 @@
 .env.test.local
 .env.production.local
 .env.*.local
+backend/.env
+frontend/.env
 
 # Dependencies
 node_modules/
@@ -25,8 +27,6 @@ dist/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
 
 # OS files
 .DS_Store
@@ -36,4 +36,4 @@ Thumbs.db
 .Trashes
 ehthumbs.db
 Desktop.ini
-
+Thumbs.db
