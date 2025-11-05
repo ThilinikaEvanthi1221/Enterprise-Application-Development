@@ -1,3 +1,4 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # Environment Variables - DO NOT COMMIT
 .env
@@ -9,19 +10,28 @@
 
 backend/.env
 frontend/.env
+.frontend/env
+.backend/env
 
 # Dependencies
 node_modules/
+/node_modules
+/.pnp
+.pnp.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 package-lock.json
 yarn.lock
 
+# Testing
+/coverage
+
 # Build outputs
+/build
 build/
 dist/
-*.log
+/production
 
 # IDE and Editor files
 .vscode/
@@ -38,14 +48,7 @@ dist/
 .Trashes
 ehthumbs.db
 Desktop.ini
-
+Thumbs.db
 
 # Logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-
-# OS
-.DS_Store
-
-Thumbs.db
