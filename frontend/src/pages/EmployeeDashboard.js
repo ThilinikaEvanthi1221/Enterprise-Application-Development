@@ -205,7 +205,7 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Staff Management
-          </Link>
+          </a>
           <a href="#notifications" className="nav-item">
             <svg
               className="nav-icon"
