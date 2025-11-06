@@ -1,5 +1,7 @@
 import React from "react";
 import { Search, Grid3x3, Mail, Bell, Menu } from "lucide-react";
+import AdminNotificationBell from "./AdminNotificationBell";
+import NotificationBell from "./NotificationBell";
 
 const Header = ({ onMenuClick }) => {
   return (
@@ -28,6 +30,16 @@ const Header = ({ onMenuClick }) => {
               placeholder="Search..."
               className="pl-10 pr-4 py-2 w-48 lg:w-64 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 text-sm"
             />
+            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+          </div>
+          
+          {/* Notifications */}
+          <div className="flex items-center gap-2">
+            {localStorage.getItem('role') === 'admin' ? (
+              <AdminNotificationBell />
+            ) : (
+              <NotificationBell />
+            )}
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" />
           </div>
           

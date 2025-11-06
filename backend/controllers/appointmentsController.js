@@ -1,4 +1,7 @@
 const Appointment = require("../models/appointment");
+const Notification = require("../models/notification");
+const User = require("../models/user");
+const { io } = require("../config/socketio");
 
 exports.listAppointments = async (req, res) => {
   try {
@@ -53,6 +56,74 @@ exports.createAppointment = async (req, res) => {
         }
       }
     );
+
+    // Find employees to notify
+    const employees = await User.find({ role: "employee" });
+    
+    // Create notifications for employees
+    for (const employee of employees) {
+      const notification = await Notification.create({
+        userId: employee._id,
+        type: "NEW_BOOKING",
+        title: "New Appointment Booking",
+        message: `New appointment scheduled for ${populatedAppointment.service.name} on ${populatedAppointment.date}`,
+        read: false,
+        appointmentId: item._id
+      });
+
+      // Emit socket event for real-time notification
+      io.to(employee._id.toString()).emit("notification", notification);
+    }
+
+    // Schedule reminder notifications
+    const bookingDate = new Date(populatedAppointment.date);
+    const reminderDate = new Date(bookingDate);
+    reminderDate.setDate(bookingDate.getDate() - 1); // Set reminder for 1 day before
+
+    // Schedule customer reminder
+    setTimeout(async () => {
+      const customerNotification = await Notification.create({
+        userId: populatedAppointment.user._id,
+        type: "BOOKING_REMINDER",
+        title: "Appointment Reminder",
+        message: `Reminder: Your appointment for ${populatedAppointment.service.name} is tomorrow`,
+        read: false,
+        appointmentId: item._id
+      });
+
+      // Send email reminder to customer
+      await sendEmail(
+        populatedAppointment.user.email,
+        'appointmentReminder',
+        {
+          user: { name: populatedAppointment.user.name },
+          details: {
+            serviceName: populatedAppointment.service.name,
+            vehicleDetails: `${populatedAppointment.vehicle.make} ${populatedAppointment.vehicle.model}`,
+            date: populatedAppointment.date,
+            time: populatedAppointment.time
+          }
+        }
+      );
+
+      io.to(populatedAppointment.user._id.toString()).emit("notification", customerNotification);
+    }, reminderDate.getTime() - Date.now());
+
+    // Schedule employee reminders
+    setTimeout(async () => {
+      for (const employee of employees) {
+        const employeeNotification = await Notification.create({
+          userId: employee._id,
+          type: "BOOKING_REMINDER",
+          title: "Upcoming Appointment",
+          message: `Reminder: Appointment for ${populatedAppointment.service.name} is scheduled for tomorrow`,
+          read: false,
+          appointmentId: item._id
+        });
+
+        io.to(employee._id.toString()).emit("notification", employeeNotification);
+      }
+    }, reminderDate.getTime() - Date.now());
 
     // Create initial progress log
     const ProgressLog = require('../models/progressLog');

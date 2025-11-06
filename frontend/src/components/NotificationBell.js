@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { socket } from '../services/socket';
 import axios from 'axios';
-import { BiBell } from 'react-icons/bi';
+import { Bell } from 'lucide-react';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
@@ -61,7 +61,7 @@ const NotificationBell = () => {
         onClick={() => setShowDropdown(!showDropdown)}
         className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full"
       >
-        <BiBell size={24} />
+        <Bell className="w-6 h-6" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-2">
             {unreadCount}
@@ -93,14 +93,31 @@ const NotificationBell = () => {
                   key={notification._id}
                   className={`p-3 hover:bg-gray-50 cursor-pointer ${
                     !notification.read ? 'bg-blue-50' : ''
+                  } ${
+                    notification.type === 'NEW_BOOKING' ? 'border-l-4 border-green-500' :
+                    notification.type === 'BOOKING_REMINDER' ? 'border-l-4 border-yellow-500' :
+                    notification.type === 'PROGRESS_UPDATE' ? 'border-l-4 border-blue-500' :
+                    ''
                   }`}
                   onClick={() => !notification.read && markAsRead(notification._id)}
                 >
-                  <div className="font-medium">{notification.title}</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-lg ${
+                      notification.type === 'NEW_BOOKING' ? 'text-green-500' :
+                      notification.type === 'BOOKING_REMINDER' ? 'text-yellow-500' :
+                      notification.type === 'PROGRESS_UPDATE' ? 'text-blue-500' :
+                      'text-gray-500'
+                    }`}>
+                      {notification.type === 'NEW_BOOKING' ? '🆕' :
+                       notification.type === 'BOOKING_REMINDER' ? '⏰' :
+                       notification.type === 'PROGRESS_UPDATE' ? '🔄' : '📢'}
+                    </span>
+                    <div className="font-medium">{notification.title}</div>
+                  </div>
+                  <div className="text-sm text-gray-600 ml-7">
                     {notification.message}
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-gray-400 mt-1 ml-7">
                     {new Date(notification.createdAt).toLocaleString()}
                   </div>
                 </div>

@@ -9,7 +9,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["PROGRESS_UPDATE", "STATUS_CHANGE", "SERVICE_COMPLETE"],
+      enum: ["PROGRESS_UPDATE", "STATUS_CHANGE", "SERVICE_COMPLETE", "NEW_BOOKING", "BOOKING_REMINDER", "SYSTEM_RISK", "FAILED_LOGIN", "UNUSUAL_ACTIVITY"],
       required: true,
     },
     title: {

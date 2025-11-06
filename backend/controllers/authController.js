@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { monitorLoginAttempts, createSystemRiskNotification } = require("../utils/systemNotifications");
 
 exports.signup = async (req, res) => {
   try {
@@ -24,7 +25,11 @@ exports.login = async (req, res) => {
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+    if (!isMatch) {
+      // Monitor failed login attempts
+      monitorLoginAttempts(req.ip);
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.json({ token, user: { id: user._id, name: user.name, role: user.role } });

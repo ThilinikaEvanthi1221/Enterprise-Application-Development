@@ -19,7 +19,7 @@ export default function AddEmployee() {
     try {
       const token = localStorage.getItem("token");
       const API = axios.create({ 
-        baseURL: "http://localhost:5000/api",
+        baseURL: "http://localhost:3000/api",
         headers: { Authorization: `Bearer ${token}` }
       });
 

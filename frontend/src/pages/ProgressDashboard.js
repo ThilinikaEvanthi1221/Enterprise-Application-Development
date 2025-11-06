@@ -79,7 +79,7 @@ const ProgressDashboard = () => {
     return () => {
       socket.off('progressUpdate');
     };
-  }, []);
+  }, [fetchProgressLogs]);
 
   const fetchProgressLogs = async () => {
     try {

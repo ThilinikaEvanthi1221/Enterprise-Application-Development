@@ -17,7 +17,7 @@ export default function Signup() {
     setLoading(true);
     
     try {
-      const res = await signup(form);
+      await signup(form);
       // Signup successful, redirect to login
       alert("Account created successfully! Please login.");
       navigate("/login");
