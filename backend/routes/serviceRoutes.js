@@ -40,10 +40,9 @@ router.patch(
   requireCustomer,
   cancelMyService
 );
-// Alternative cancel route (shorter path)
-router.patch("/:id/cancel", verifyToken, requireCustomer, cancelMyService);
 
 // EMPLOYEE ROUTES - Employees can view assigned work and update progress
+// IMPORTANT: These must come BEFORE the generic /:id routes
 router.get("/assigned", verifyToken, requireEmployee, getAssignedServices);
 router.get("/available", verifyToken, requireEmployee, getAvailableServices);
 router.patch(
@@ -55,11 +54,18 @@ router.patch(
 router.post("/:id/claim", verifyToken, requireEmployee, claimService);
 
 // ADMIN ROUTES - Admins have full control
+// IMPORTANT: Generic /:id routes must come AFTER specific routes like /assigned
 router.get("/", verifyToken, requireAdmin, listServices);
-router.get("/:id", verifyToken, requireAdmin, getService);
 router.post("/", verifyToken, requireAdmin, createService);
+router.patch("/:id/approve", verifyToken, requireAdmin, approveService);
 router.put("/:id", verifyToken, requireAdmin, updateService);
 router.delete("/:id", verifyToken, requireAdmin, deleteService);
-router.patch("/:id/approve", verifyToken, requireAdmin, approveService);
+
+// Customer cancel route (alternative shorter path)
+// This should come AFTER admin routes since it's a parameterized route
+router.patch("/:id/cancel", verifyToken, requireCustomer, cancelMyService);
+
+// Admin get single service - MUST be last since it matches any /:id
+router.get("/:id", verifyToken, requireAdmin, getService);
 
 module.exports = router;

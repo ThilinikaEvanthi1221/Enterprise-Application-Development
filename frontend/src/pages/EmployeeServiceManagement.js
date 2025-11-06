@@ -30,12 +30,25 @@ const EmployeeServiceManagement = () => {
       const tokenParts = token.split(".");
       const payload = JSON.parse(atob(tokenParts[1]));
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      const userRole = payload.role || userData.role;
+      
+      console.log("Token payload:", payload);
+      console.log("User role from token:", userRole);
+      
+      // Check if user has employee or admin role
+      if (userRole !== "employee" && userRole !== "admin") {
+        alert(`Access denied. This page is for employees only. Your role: ${userRole}`);
+        navigate("/");
+        return;
+      }
+      
       setUser({
         ...userData,
-        role: payload.role || userData.role || "employee",
+        role: userRole,
       });
     } catch (e) {
       console.error("Error decoding token:", e);
+      navigate("/login");
     }
   }, [navigate]);
 
@@ -55,6 +68,19 @@ const EmployeeServiceManagement = () => {
       const response = await fetch(`http://localhost:5000${endpoint}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(`Error ${response.status}:`, errorData);
+        
+        if (response.status === 403) {
+          alert(`Access forbidden: ${errorData.msg || 'You do not have permission to access this resource'}`);
+          navigate("/");
+          return;
+        }
+        throw new Error(errorData.msg || `HTTP ${response.status}`);
+      }
+      
       const data = await response.json();
 
       if (activeTab === "assigned") {
@@ -64,6 +90,7 @@ const EmployeeServiceManagement = () => {
       }
     } catch (error) {
       console.error("Error fetching services:", error);
+      alert(`Error loading services: ${error.message}`);
     } finally {
       setLoading(false);
     }

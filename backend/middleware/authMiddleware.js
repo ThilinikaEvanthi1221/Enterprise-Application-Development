@@ -3,17 +3,22 @@ const jwt = require("jsonwebtoken");
 // Verifies JWT and attaches user payload to req.user
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization || "";
+  console.log("verifyToken - authHeader:", authHeader.substring(0, 20) + "...");
   const token = authHeader.startsWith("Bearer ")
     ? authHeader.substring(7)
     : null;
-  if (!token)
+  if (!token) {
+    console.log("verifyToken - No token found");
     return res.status(401).json({ msg: "No token, authorization denied" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("verifyToken - decoded token:", decoded);
     req.user = decoded;
     return next();
   } catch (err) {
+    console.log("verifyToken - Token verification failed:", err.message);
     return res.status(401).json({ msg: "Token is not valid" });
   }
 };
@@ -28,10 +33,13 @@ const requireAdmin = (req, res, next) => {
 
 // Ensures the authenticated user has employee or admin role
 const requireEmployee = (req, res, next) => {
+  console.log("requireEmployee middleware - req.user:", req.user);
   if (!req.user) return res.status(401).json({ msg: "Unauthorized" });
   if (req.user.role !== "employee" && req.user.role !== "admin") {
+    console.log("Access denied - user role:", req.user.role);
     return res.status(403).json({ msg: "Forbidden: Employees only" });
   }
+  console.log("requireEmployee middleware passed - role:", req.user.role);
   return next();
 };
 
