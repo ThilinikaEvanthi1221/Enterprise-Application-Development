@@ -79,6 +79,7 @@ app.use("/api/dashboard", require("./routes/dashboardRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/staff", require("./routes/staffRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
 
 // Inventory Management Routes
 app.use("/api/inventory", require("./inventory-management").routes);

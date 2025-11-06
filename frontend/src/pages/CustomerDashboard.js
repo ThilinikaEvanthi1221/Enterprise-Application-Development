@@ -1,14 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AppointmentForm from "../components/appointments/AppointmentForm";
+import axios from "axios";
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState({});
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     setUser(userData);
+    fetchAppointments();
   }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get('/api/appointments/my', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setAppointments(response.data);
+    } catch (err) {
+      setError('Failed to fetch appointments');
+      console.error('Error fetching appointments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -143,26 +166,84 @@ export default function CustomerDashboard() {
         <div style={styles.grid}>
           <div style={styles.statCard}>
             <div style={styles.statLabel}>Active Appointments</div>
-            <div style={styles.statValue}>--</div>
+            <div style={styles.statValue}>
+              {loading ? '--' : appointments.filter(a => a.status === 'confirmed').length}
+            </div>
           </div>
           <div style={styles.statCard}>
-            <div style={styles.statLabel}>My Vehicles</div>
-            <div style={styles.statValue}>--</div>
+            <div style={styles.statLabel}>Pending Appointments</div>
+            <div style={styles.statValue}>
+              {loading ? '--' : appointments.filter(a => a.status === 'pending').length}
+            </div>
           </div>
           <div style={styles.statCard}>
             <div style={styles.statLabel}>Completed Services</div>
-            <div style={styles.statValue}>--</div>
+            <div style={styles.statValue}>
+              {loading ? '--' : appointments.filter(a => a.status === 'completed').length}
+            </div>
           </div>
           <div style={styles.statCard}>
-            <div style={styles.statLabel}>Upcoming Services</div>
-            <div style={styles.statValue}>--</div>
+            <div style={styles.statLabel}>Total Appointments</div>
+            <div style={styles.statValue}>
+              {loading ? '--' : appointments.length}
+            </div>
           </div>
         </div>
 
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Quick Actions</h2>
-          <ul style={styles.menuList}>
-            {menuItems.map((item, index) => (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px'
+          }}>
+            <h2 style={styles.cardTitle}>{activeTab === 'book' ? 'Book Appointment' : 'Quick Actions'}</h2>
+            {activeTab !== 'book' && (
+              <button
+                onClick={() => setActiveTab('book')}
+                style={{
+                  ...styles.logoutBtn,
+                  background: '#10b981'
+                }}
+                onMouseEnter={(e) => (e.target.style.background = '#059669')}
+                onMouseLeave={(e) => (e.target.style.background = '#10b981')}
+              >
+                Book New Appointment
+              </button>
+            )}
+          </div>
+
+          {activeTab === 'book' ? (
+            <>
+              <AppointmentForm />
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                style={{
+                  ...styles.logoutBtn,
+                  background: '#6b7280',
+                  marginTop: '20px'
+                }}
+                onMouseEnter={(e) => (e.target.style.background = '#4b5563')}
+                onMouseLeave={(e) => (e.target.style.background = '#6b7280')}
+              >
+                Back to Dashboard
+              </button>
+            </>
+          ) : (
+            <>
+              {error && (
+                <div style={{
+                  padding: '12px',
+                  marginBottom: '20px',
+                  background: '#fee2e2',
+                  color: '#dc2626',
+                  borderRadius: '8px'
+                }}>
+                  {error}
+                </div>
+              )}
+              <ul style={styles.menuList}>
+                {menuItems.map((item, index) => (
               <li
                 key={index}
                 style={styles.menuItem}
