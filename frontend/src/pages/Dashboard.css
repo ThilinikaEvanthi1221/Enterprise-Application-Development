@@ -799,3 +799,16 @@
     padding-left: 80px;
   }
 }
+
+.profile-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* make overlay visible when hovering the avatar */
+.profile-avatar:hover .avatar-hover-overlay {
+  opacity: 1;
+}

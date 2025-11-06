@@ -4,6 +4,7 @@ import {
   updateProfile,
   getMyVehicles,
   getVehicleByNumber,
+  uploadProfileImage,
 } from "../services/api";
 import "./Dashboard.css";
 
@@ -20,14 +21,27 @@ export default function Profile() {
   const [lookupResult, setLookupResult] = useState(null);
   const [lookupError, setLookupError] = useState("");
 
-  // dynamic left padding to match fixed sidebar width (260 -> 80 on small screens)
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  const API_ORIGIN =
+    process.env.REACT_APP_API_ORIGIN || "http://localhost:5000";
+
+  const buildImgSrc = (p) => {
+    if (!p) return "";
+    return p.startsWith("http") ? p : `${API_ORIGIN}${p}`;
+  };
+
+  // Correct defaults: 260 desktop, 80 mobile
   const [sidebarPad, setSidebarPad] = useState(
     typeof window !== "undefined" && window.innerWidth <= 768 ? 8 : 8
   );
 
   useEffect(() => {
     function onResize() {
-      setSidebarPad(window.innerWidth <= 768 ? 80 : 260);
+      setSidebarPad(window.innerWidth <= 768 ? 8 : 8);
     }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -93,24 +107,65 @@ export default function Profile() {
     setLookupError("");
     setLookupResult(null);
     if (!searchPlate.trim()) return;
-
     try {
       const res = await getVehicleByNumber(searchPlate.trim());
       setLookupResult(res.data);
     } catch (err) {
-      if (err?.response?.status === 404) {
+      if (err?.response?.status === 404)
         setLookupError("No vehicle found for that plate.");
-      } else if (err?.response?.status === 403) {
+      else if (err?.response?.status === 403)
         setLookupError("This plate is registered to another user.");
-      } else if (err?.response?.data?.msg) {
-        setLookupError(err.response.data.msg);
-      } else {
-        setLookupError("Lookup failed.");
-      }
+      else if (err?.response?.data?.msg) setLookupError(err.response.data.msg);
+      else setLookupError("Lookup failed.");
+    }
+  };
+
+  const onPickAvatar = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setAvatarFile(f);
+    setAvatarPreview(URL.createObjectURL(f));
+  };
+
+  const onUploadAvatar = async (e) => {
+    e.preventDefault();
+    if (!avatarFile) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("avatar", avatarFile);
+      const res = await uploadProfileImage(fd);
+      setProfile(res.data);
+      setAvatarOpen(false);
+      setAvatarFile(null);
+      setAvatarPreview("");
+    } catch (err) {
+      console.error(err);
+      alert(err?.response?.data?.msg || "Upload failed");
+    } finally {
+      setUploading(false);
     }
   };
 
   if (loading) return <div className="loading">Loading...</div>;
+
+  const CameraIcon = ({ size = 16 }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-3h8l2 3h3a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  );
 
   return (
     <div
@@ -118,7 +173,7 @@ export default function Profile() {
       style={{
         background: "#1a56db",
         minHeight: "100vh",
-        paddingLeft: sidebarPad, // ← space for fixed sidebar
+        paddingLeft: sidebarPad,
         display: "flex",
         flexDirection: "column",
       }}
@@ -126,22 +181,18 @@ export default function Profile() {
       <div
         className="main-content"
         style={{
-          // hard override the global dashboard margin
-          marginLeft: 0, // ← remove the left gap
+          marginLeft: 0,
           minHeight: "100vh",
           padding: 32,
           display: "flex",
-          alignItems: "center", // vertical center
-          justifyContent: "center", // horizontal center
+          alignItems: "center",
+          justifyContent: "center",
           flex: 1,
         }}
       >
         <div
           className="profile-layout"
-          style={{
-            width: "100%",
-            maxWidth: 1100, // nice readable width
-          }}
+          style={{ width: "100%", maxWidth: 1100 }}
         >
           <div className="profile-left">
             <div className="auth-card">
@@ -153,13 +204,142 @@ export default function Profile() {
               </header>
 
               <div className="profile-content">
-                <div className="profile-header">
-                  <div className="profile-avatar">
-                    <span>{profile?.name?.[0]?.toUpperCase() || "?"}</span>
+                <div
+                  className="profile-header"
+                  style={{ alignItems: "center" }}
+                >
+                  {/* Avatar block with overlay + icon button + link */}
+                  <div
+                    className="profile-avatar"
+                    style={{
+                      position: "relative",
+                      width: 96,
+                      height: 96,
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setAvatarOpen(true)}
+                    title="Change profile picture"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setAvatarOpen(true);
+                      }
+                    }}
+                  >
+                    {profile?.profileImage ? (
+                      <img
+                        src={buildImgSrc(profile.profileImage)}
+                        alt="Profile"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 32,
+                        }}
+                      >
+                        {profile?.name?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    )}
+
+                    {/* Hover overlay (desktop) */}
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.35)",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0,
+                        transition: "opacity .2s",
+                        pointerEvents: "none",
+                      }}
+                      className="avatar-hover-overlay"
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontSize: 14,
+                          fontWeight: 600,
+                        }}
+                      >
+                        <CameraIcon />
+                        Change
+                      </div>
+                    </div>
+
+                    {/* Camera FAB (always visible) */}
+                    <button
+                      type="button"
+                      aria-label="Change profile picture"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAvatarOpen(true);
+                      }}
+                      style={{
+                        position: "absolute",
+                        right: -6,
+                        bottom: -6,
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        border: "none",
+                        background: "#1a56db",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <CameraIcon size={18} />
+                    </button>
                   </div>
-                  <div className="profile-email">
+
+                  <div className="profile-email" style={{ marginLeft: 16 }}>
                     <label>Email</label>
                     <span>{profile?.email}</span>
+                    <div style={{ marginTop: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => setAvatarOpen(true)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: "#1a56db",
+                          fontSize: 14,
+                          fontWeight: 500,
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                          padding: 0,
+                        }}
+                      >
+                        Change photo
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -297,6 +477,85 @@ export default function Profile() {
           </aside>
         </div>
       </div>
+
+      {/* Avatar Modal */}
+      {avatarOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setAvatarOpen(false)}
+        >
+          <div
+            className="auth-card"
+            style={{ width: 420, maxWidth: "90%", cursor: "default" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3
+              className="auth-title"
+              style={{ fontSize: 20, marginBottom: 8 }}
+            >
+              Update Profile Picture
+            </h3>
+            <p className="auth-subtitle">Choose an image (max 2MB).</p>
+
+            <div style={{ margin: "12px 0" }}>
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Preview"
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : profile?.profileImage ? (
+                <img
+                  src={buildImgSrc(profile.profileImage)}
+                  alt="Current avatar"
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : null}
+            </div>
+
+            <input type="file" accept="image/*" onChange={onPickAvatar} />
+
+            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+              <button
+                className="auth-button"
+                onClick={onUploadAvatar}
+                disabled={!avatarFile || uploading}
+              >
+                {uploading ? "Uploading..." : "Save"}
+              </button>
+              <button
+                className="logout-btn"
+                type="button"
+                onClick={() => {
+                  setAvatarOpen(false);
+                  setAvatarFile(null);
+                  setAvatarPreview("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

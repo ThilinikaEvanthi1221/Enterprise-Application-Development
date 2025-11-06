@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
+const path = require("path");
 const connectDB = require("./config/db");
 const Admin = require("./models/admin");
 const {
@@ -24,6 +25,9 @@ app.use(
 
 // Body parser
 app.use(express.json());
+
+// Serve uploaded files publicly (e.g., /uploads/avatars/xxx.jpg)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Connect to database and run migrations on startup
 (async () => {
