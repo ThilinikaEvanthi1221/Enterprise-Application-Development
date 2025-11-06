@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "../pages/Dashboard.css";
 
 const EmployeeServiceManagement = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [assignedServices, setAssignedServices] = useState([]);
   const [availableServices, setAvailableServices] = useState([]);
   const [activeTab, setActiveTab] = useState("assigned");
@@ -13,6 +17,27 @@ const EmployeeServiceManagement = () => {
     progress: 0,
     notes: "",
   });
+
+  useEffect(() => {
+    // Check if user is logged in and get user info
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const tokenParts = token.split(".");
+      const payload = JSON.parse(atob(tokenParts[1]));
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      setUser({
+        ...userData,
+        role: payload.role || userData.role || "employee",
+      });
+    } catch (e) {
+      console.error("Error decoding token:", e);
+    }
+  }, [navigate]);
 
   useEffect(() => {
     fetchServices();
@@ -243,8 +268,92 @@ const EmployeeServiceManagement = () => {
     </div>
   );
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="dashboard-container">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <div className="logo">
+            <div className="logo-icon">MMM</div>
+            <span className="logo-text">AutoServicePro</span>
+          </div>
+        </div>
+        <nav className="sidebar-nav">
+          <a onClick={() => navigate("/employee")} className="nav-item" style={{ cursor: "pointer" }}>
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Dashboard
+          </a>
+          <a onClick={() => navigate("/employee-services")} className="nav-item active" style={{ cursor: "pointer" }}>
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            My Service Tasks
+          </a>
+          <a onClick={() => navigate("/employee/bookings")} className="nav-item" style={{ cursor: "pointer" }}>
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Bookings
+          </a>
+          <a onClick={() => navigate("/employee/customers")} className="nav-item" style={{ cursor: "pointer" }}>
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Customers
+          </a>
+          <a onClick={() => navigate("/employee/inventory")} className="nav-item" style={{ cursor: "pointer" }}>
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            Inventory
+          </a>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="main-content">
+        {/* Header */}
+        <header className="dashboard-header">
+          <div className="header-left">
+            <h1 className="page-title">Service Management</h1>
+            <p className="text-gray-600">Manage and track your assigned services</p>
+          </div>
+          <div className="header-right">
+            <div className="search-bar">
+              <input type="text" placeholder="Q Search..." />
+              <span className="shortcut">⌘ K</span>
+            </div>
+            <div className="header-icons">
+              <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <div className="notification-icon">
+                <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="notification-dot"></span>
+              </div>
+            </div>
+            <div className="user-profile">
+              <div className="avatar">{user?.name?.charAt(0) || "E"}</div>
+              <div className="user-info">
+                <span className="user-name">{user?.name || "Employee"}</span>
+                <span className="user-role">Employee</span>
+              </div>
+            </div>
+            <button onClick={handleLogout} className="logout-btn">Logout</button>
+          </div>
+        </header>
+
+        <div className="p-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Service Management</h1>
@@ -496,6 +605,8 @@ const EmployeeServiceManagement = () => {
           </div>
         </div>
       )}
+        </div>
+      </main>
     </div>
   );
 };

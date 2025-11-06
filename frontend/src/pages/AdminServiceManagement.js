@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Layout from "../components/Layout";
 
 const AdminServiceManagement = () => {
   const [services, setServices] = useState([]);
@@ -149,14 +150,15 @@ const AdminServiceManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Service Management</h1>
-        <p className="text-gray-600 mt-1">
-          Manage and oversee all service requests
-        </p>
-      </div>
+    <Layout>
+      <div className="p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Service Management</h1>
+          <p className="text-gray-600 mt-1">
+            Manage and oversee all service requests
+          </p>
+        </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
@@ -664,7 +666,8 @@ const AdminServiceManagement = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </Layout>
   );
 };
 
