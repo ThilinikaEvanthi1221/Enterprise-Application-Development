@@ -2,6 +2,7 @@ const express = require("express");
 const { verifyToken, requireAdmin } = require("../middleware/authMiddleware");
 const {
   listVehicles,
+  getMyVehicles,
   getVehicle,
   createVehicle,
   updateVehicle,
@@ -12,25 +13,18 @@ const {
 
 const router = express.Router();
 
-// Always put static/specific routes before dynamic ones!
-
-// Lookup by plate number (require auth so ownership can be checked)
+// specific routes first
 router.get("/lookup", verifyToken, lookupByPlate);
-
-// Vehicles by owner id
+router.get("/my-vehicles", verifyToken, getMyVehicles);
 router.get("/owner/:userId", verifyToken, getVehiclesByOwner);
 
-// List all (admin only)
+// collection and mutations
 router.get("/", verifyToken, requireAdmin, listVehicles);
-
-// Create new
 router.post("/", verifyToken, createVehicle);
-
-// Update and delete by id
 router.put("/:id", verifyToken, updateVehicle);
 router.delete("/:id", verifyToken, deleteVehicle);
 
-// Get by id (must be last!)
+// id route last
 router.get("/:id", verifyToken, getVehicle);
 
 module.exports = router;

@@ -9,18 +9,12 @@ const Booking = require("../models/booking");
 // Admin dashboard metrics
 exports.getMetrics = async (req, res) => {
   try {
-    const [
-      usersCount,
-      vehiclesCount,
-      servicesCount,
-      appointmentsCount,
-      timeLogsCount,
-    ] = await Promise.all([
+    const [usersCount, vehiclesCount, servicesCount, appointmentsCount, timeLogsCount] = await Promise.all([
       User.countDocuments(),
       Vehicle.countDocuments(),
       Service.countDocuments(),
       Appointment.countDocuments(),
-      TimeLog.countDocuments(),
+      TimeLog.countDocuments()
     ]);
 
     const recentAppointments = await Appointment.find()
@@ -31,14 +25,8 @@ exports.getMetrics = async (req, res) => {
       .populate("service", "name");
 
     return res.json({
-      totals: {
-        users: usersCount,
-        vehicles: vehiclesCount,
-        services: servicesCount,
-        appointments: appointmentsCount,
-        timeLogs: timeLogsCount,
-      },
-      recentAppointments,
+      totals: { users: usersCount, vehicles: vehiclesCount, services: servicesCount, appointments: appointmentsCount, timeLogs: timeLogsCount },
+      recentAppointments
     });
   } catch (err) {
     return res.status(500).json({ msg: err.message });
@@ -51,24 +39,22 @@ exports.getDashboardStats = async (req, res) => {
     const employeeId = req.user.id;
 
     // Total Projects Assigned
-    const totalProjects = await Project.countDocuments({
-      assignedTo: employeeId,
-    });
+    const totalProjects = await Project.countDocuments({ assignedTo: employeeId });
 
     // Ongoing Services
-    const ongoingServices = await Service.countDocuments({
+    const ongoingServices = await Service.countDocuments({ 
       assignedTo: employeeId,
-      status: "ongoing",
+      status: "ongoing"
     });
 
     // Completed Tasks (projects + services)
-    const completedProjects = await Project.countDocuments({
+    const completedProjects = await Project.countDocuments({ 
       assignedTo: employeeId,
-      status: "completed",
+      status: "completed"
     });
-    const completedServices = await Service.countDocuments({
+    const completedServices = await Service.countDocuments({ 
       assignedTo: employeeId,
-      status: "completed",
+      status: "completed"
     });
     const completedTasks = completedProjects + completedServices;
 
@@ -76,8 +62,8 @@ exports.getDashboardStats = async (req, res) => {
     const recentBookings = await Booking.find({
       $or: [
         { assignedTo: employeeId },
-        { status: { $in: ["pending", "confirmed", "in-progress"] } },
-      ],
+        { status: { $in: ["pending", "confirmed", "in-progress"] } }
+      ]
     })
       .populate("customer", "name email")
       .sort({ createdAt: -1 })
@@ -90,47 +76,33 @@ exports.getDashboardStats = async (req, res) => {
 
     const lastWeekProjects = await Project.countDocuments({
       assignedTo: employeeId,
-      createdAt: { $lt: oneWeekAgo },
+      createdAt: { $lt: oneWeekAgo }
     });
-    const projectChange =
-      lastWeekProjects > 0
-        ? (
-            ((totalProjects - lastWeekProjects) / lastWeekProjects) *
-            100
-          ).toFixed(1)
-        : 0;
+    const projectChange = lastWeekProjects > 0 
+      ? ((totalProjects - lastWeekProjects) / lastWeekProjects * 100).toFixed(1)
+      : 0;
 
     const lastWeekServices = await Service.countDocuments({
       assignedTo: employeeId,
       status: "ongoing",
-      createdAt: { $lt: oneWeekAgo },
+      createdAt: { $lt: oneWeekAgo }
     });
-    const serviceChange =
-      lastWeekServices > 0
-        ? (
-            ((ongoingServices - lastWeekServices) / lastWeekServices) *
-            100
-          ).toFixed(1)
-        : 0;
+    const serviceChange = lastWeekServices > 0
+      ? ((ongoingServices - lastWeekServices) / lastWeekServices * 100).toFixed(1)
+      : 0;
 
-    const lastWeekCompleted =
-      (await Project.countDocuments({
-        assignedTo: employeeId,
-        status: "completed",
-        updatedAt: { $lt: oneWeekAgo },
-      })) +
-      (await Service.countDocuments({
-        assignedTo: employeeId,
-        status: "completed",
-        updatedAt: { $lt: oneWeekAgo },
-      }));
-    const completedChange =
-      lastWeekCompleted > 0
-        ? (
-            ((completedTasks - lastWeekCompleted) / lastWeekCompleted) *
-            100
-          ).toFixed(1)
-        : 0;
+    const lastWeekCompleted = await Project.countDocuments({
+      assignedTo: employeeId,
+      status: "completed",
+      updatedAt: { $lt: oneWeekAgo }
+    }) + await Service.countDocuments({
+      assignedTo: employeeId,
+      status: "completed",
+      updatedAt: { $lt: oneWeekAgo }
+    });
+    const completedChange = lastWeekCompleted > 0
+      ? ((completedTasks - lastWeekCompleted) / lastWeekCompleted * 100).toFixed(1)
+      : 0;
 
     res.json({
       totalProjects,
@@ -140,10 +112,11 @@ exports.getDashboardStats = async (req, res) => {
       changes: {
         projects: parseFloat(projectChange),
         services: parseFloat(serviceChange),
-        completed: parseFloat(completedChange),
-      },
+        completed: parseFloat(completedChange)
+      }
     });
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
 };
+

@@ -10,6 +10,21 @@ exports.listVehicles = async (req, res) => {
   }
 };
 
+exports.getMyVehicles = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ msg: "Not authenticated" });
+
+    const vehicles = await Vehicle.find({ owner: userId })
+      .populate("owner", "name email")
+      .lean();
+
+    return res.json({ vehicles });
+  } catch (err) {
+    return res.status(500).json({ msg: err.message });
+  }
+};
+
 exports.lookupByPlate = async (req, res) => {
   try {
     const plateNumber = (req.query.plateNumber || "").trim();
@@ -100,9 +115,10 @@ exports.deleteVehicle = async (req, res) => {
   try {
     const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
     if (!vehicle) return res.status(404).json({ msg: "Vehicle not found" });
-    return res.json({ msg: "Vehicle deleted" });
-  } catch (err) {
-    return res.status(500).json({ msg: err.message });
+    res.json({ msg: "Vehicle deleted" });
+  } catch (error) {
+    console.error("Error deleting vehicle:", error);
+    res.status(500).json({ msg: "Server error" });
   }
 };
 

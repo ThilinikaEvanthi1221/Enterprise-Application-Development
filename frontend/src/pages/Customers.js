@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { getCustomers } from "../services/api";
 import "./Dashboard.css";
 
@@ -35,46 +34,10 @@ export default function Customers() {
     return true;
   });
 
-  if (loading) {
-    return <div style={{ padding: 24 }}>Loading...</div>;
-  }
-
-  // No logout button on this page (to match Bookings page)
-
+  // Remove full-page loading - render UI immediately
   return (
     <>
-      <header className="bookings-header">
-          <div className="header-left">
-            <h1 className="page-title">Customers</h1>
-            <p className="page-subtitle">Let's check your Garage today</p>
-          </div>
-          <div className="header-right">
-            <div className="search-bar">
-              <input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search..." />
-              <span className="shortcut">⌘ K</span>
-            </div>
-            <div className="header-icons">
-              <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <div className="notification-icon">
-                <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span className="notification-dot"></span>
-              </div>
-            </div>
-            <div className="user-profile">
-              <div className="avatar">JM</div>
-              <div className="user-info">
-                <span className="user-name">Jason Miller</span>
-                <span className="user-role">Employee</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Filters Row */}
+      {/* Filters Row */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <label style={{ color: "#6b7280", fontSize: 13 }}>Show:</label>
@@ -90,6 +53,12 @@ export default function Customers() {
           </div>
         </div>
 
+      {loading ? (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+          Loading customers...
+        </div>
+      ) : (
+        <>
         {/* Full-width search with Filters button */}
         <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, marginBottom: 20 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -153,6 +122,8 @@ export default function Customers() {
           </table>
           </div>
         </div>
+        </>
+      )}
     </>
   );
 }

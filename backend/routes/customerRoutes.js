@@ -6,3 +6,5 @@ const { verifyToken } = require("../middleware/authMiddleware");
 router.get("/", verifyToken, listCustomers);
 
 module.exports = router;
+
+

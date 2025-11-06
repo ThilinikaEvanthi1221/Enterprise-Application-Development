@@ -22,6 +22,12 @@ import Services from "./pages/Services";
 import Vehicles from "./pages/Vehicles";
 import TimeLogs from "./pages/TimeLogs";
 import ChatBot from "./pages/ChatBot";
+import Profile from "./pages/Profile";
+
+// Service Request Components
+import CustomerServiceRequests from "./pages/CustomerServiceRequests";
+import EmployeeServiceManagement from "./pages/EmployeeServiceManagement";
+import AdminServiceManagement from "./pages/AdminServiceManagement";
 
 function App() {
   return (
@@ -83,6 +89,34 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* Service Request Routes */}
+        <Route
+          path="/customer-service-requests"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <CustomerServiceRequests />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/employee-services"
+          element={
+            <PrivateRoute allowedRoles={["employee"]}>
+              <EmployeeServiceManagement />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin-services"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AdminServiceManagement />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Legacy Routes */}
         <Route
           path="/users"
           element={
@@ -157,6 +191,7 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );

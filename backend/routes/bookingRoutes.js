@@ -7,3 +7,4 @@ const { verifyToken } = require("../middleware/authMiddleware");
 router.get("/", verifyToken, getAllBookings);
 
 module.exports = router;
+
