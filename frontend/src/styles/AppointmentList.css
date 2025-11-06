@@ -1,0 +1,202 @@
+/* Page background layout */
+.appointment-page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Book / My Appointments Tabs */
+.page-tabs {
+  display: flex;
+  justify-content: center;
+  background: #f5f6fa;
+  border-radius: 25px;
+  padding: 8px;
+  width: fit-content;
+  margin: 25px auto 35px;
+  gap: 10px;
+}
+
+.page-tabs .tab-btn {
+  padding: 10px 26px;
+  border-radius: 25px;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.page-tabs .tab-btn:hover {
+  background: #e5e7eb;
+}
+
+.page-tabs .tab-btn.active {
+  background: #111827;
+  color: #fff;
+}
+
+/* Main container box */
+.appointment-container {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 35px;
+  margin-bottom: 30px;
+}
+
+.appointment-container h2 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.appointment-container .subtitle {
+  text-align: center;
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 25px;
+}
+
+/* Filter tabs */
+.filter-tabs {
+  display: flex;
+  justify-content: space-between;
+  background: #f3f4f6;
+  border-radius: 25px;
+  overflow: hidden;
+  margin-bottom: 25px;
+}
+
+.filter-tabs button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: none;
+  color: #374151;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-tabs button.active {
+  background: #111827;
+  color: #fff;
+}
+
+.filter-tabs button:hover {
+  background: #e5e7eb;
+}
+
+/* Appointment cards */
+.appointment-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px 25px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.status {
+  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.status.confirmed {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status.in-progress {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.status.completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.card-content p {
+  font-size: 15px;
+  color: #1f2937;
+  margin: 4px 0;
+}
+
+.card-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cancel-btn:hover {
+  background: #b91c1c;
+}
+
+.view-btn {
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+  background: #e5e7eb;
+}
+
+.no-appointments {
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* Footer */
+.appointment-footer {
+  text-align: center;
+  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 40px;
+  padding-bottom: 10px;
+}
