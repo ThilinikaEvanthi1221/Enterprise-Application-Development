@@ -1,14 +1,23 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { login } from "../services/api";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await login(form);
-    localStorage.setItem("token", res.data.token);
-    alert("Login successful! Role: " + res.data.user.role);
+    try {
+      const res = await login(form);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      
+      // Redirect to appointment booking page
+      navigate("/book-appointment");
+    } catch (error) {
+      alert("Login failed: " + (error.response?.data?.msg || error.message));
+    }
   };
 
   // CSS styles inside JS

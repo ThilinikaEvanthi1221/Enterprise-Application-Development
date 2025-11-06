@@ -1,9 +1,9 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   createAppointment,
   getAllAppointments,
   updateAppointmentStatus,
-} from "../controllers/appointmentController.js";
+} = require("../controllers/appointmentController");
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ router.post("/", createAppointment); // Customer books
 router.get("/", getAllAppointments); // Admin views all
 router.put("/:id/status", updateAppointmentStatus); // Admin updates status
 
-export default router;
+module.exports = router;
