@@ -1,5 +1,6 @@
 const Vehicle = require("../models/vehicle");
 
+// Get all vehicles (admin/employee use)
 exports.listVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find().populate("owner", "name email");
@@ -9,9 +10,25 @@ exports.listVehicles = async (req, res) => {
   }
 };
 
+// Get current user's vehicles only
+exports.getMyVehicles = async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find({ owner: req.user.id }).populate(
+      "owner",
+      "name email"
+    );
+    return res.json(vehicles);
+  } catch (err) {
+    return res.status(500).json({ msg: err.message });
+  }
+};
+
 exports.getVehicle = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findById(req.params.id).populate("owner", "name email");
+    const vehicle = await Vehicle.findById(req.params.id).populate(
+      "owner",
+      "name email"
+    );
     if (!vehicle) return res.status(404).json({ msg: "Vehicle not found" });
     return res.json(vehicle);
   } catch (err) {
@@ -30,7 +47,9 @@ exports.createVehicle = async (req, res) => {
 
 exports.updateVehicle = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!vehicle) return res.status(404).json({ msg: "Vehicle not found" });
     return res.json(vehicle);
   } catch (err) {
@@ -47,5 +66,3 @@ exports.deleteVehicle = async (req, res) => {
     return res.status(500).json({ msg: err.message });
   }
 };
-
-

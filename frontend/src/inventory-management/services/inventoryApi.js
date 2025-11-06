@@ -137,4 +137,5 @@ class InventoryApiService {
   }
 }
 
-export default new InventoryApiService();
+const inventoryApi = new InventoryApiService();
+export default inventoryApi;

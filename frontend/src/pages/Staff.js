@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { getStaff } from "../services/api";
 import "./Dashboard.css";
 
 export default function Staff() {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
   const [showFilter, setShowFilter] = useState("all"); // all | last30 | thisYear
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {

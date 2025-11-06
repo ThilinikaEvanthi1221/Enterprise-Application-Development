@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import inventoryApi from '../services/inventoryApi';
 import '../styles/Reports.css';
 
@@ -20,11 +20,7 @@ const Reports = () => {
     { id: 'valueReport', name: 'Inventory Value', icon: '💰' }
   ];
 
-  useEffect(() => {
-    fetchReportData();
-  }, [activeReport, dateRange]);
-
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -38,7 +34,7 @@ const Reports = () => {
           response = await inventoryApi.getLowStockReport();
           break;
         case 'transactions':
-          response = await inventoryApi.getTransactionReport({
+          response = await inventoryApi.getTransactionHistory({
             startDate: dateRange.startDate,
             endDate: dateRange.endDate
           });
@@ -47,13 +43,14 @@ const Reports = () => {
           response = await inventoryApi.getCategoryAnalysis();
           break;
         case 'valueReport':
-          response = await inventoryApi.getInventoryValueReport();
+          response = await inventoryApi.getInventoryValue();
           break;
         default:
           response = await inventoryApi.getInventorySummary();
       }
       
       setReportData(response.data || response);
+      setError('');
     } catch (err) {
       console.error('Report fetch error:', err);
       
@@ -78,7 +75,11 @@ const Reports = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeReport, dateRange]);
+
+  useEffect(() => {
+    fetchReportData();
+  }, [fetchReportData]);
 
   const handleDateRangeChange = (field, value) => {
     setDateRange(prev => ({

@@ -19,7 +19,7 @@ export default function CustomerDashboard() {
   const styles = {
     container: {
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)"
+      background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
     },
     header: {
       background: "white",
@@ -27,17 +27,17 @@ export default function CustomerDashboard() {
       padding: "16px 32px",
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "center"
+      alignItems: "center",
     },
     title: {
       fontSize: "24px",
       fontWeight: "bold",
-      color: "#1e3a8a"
+      color: "#1e3a8a",
     },
     userInfo: {
       display: "flex",
       alignItems: "center",
-      gap: "16px"
+      gap: "16px",
     },
     badge: {
       background: "#7c3aed",
@@ -45,7 +45,7 @@ export default function CustomerDashboard() {
       padding: "4px 12px",
       borderRadius: "12px",
       fontSize: "12px",
-      fontWeight: "600"
+      fontWeight: "600",
     },
     logoutBtn: {
       background: "#2563eb",
@@ -54,52 +54,52 @@ export default function CustomerDashboard() {
       padding: "8px 16px",
       borderRadius: "8px",
       cursor: "pointer",
-      fontWeight: "600"
+      fontWeight: "600",
     },
     content: {
       padding: "32px",
       maxWidth: "1200px",
-      margin: "0 auto"
+      margin: "0 auto",
     },
     card: {
       background: "white",
       borderRadius: "16px",
       padding: "24px",
       marginBottom: "24px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
     },
     cardTitle: {
       fontSize: "20px",
       fontWeight: "bold",
       color: "#1f2937",
-      marginBottom: "16px"
+      marginBottom: "16px",
     },
     grid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
       gap: "16px",
-      marginBottom: "24px"
+      marginBottom: "24px",
     },
     statCard: {
       background: "white",
       borderRadius: "12px",
       padding: "20px",
       boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      borderLeft: "4px solid #7c3aed"
+      borderLeft: "4px solid #7c3aed",
     },
     statLabel: {
       color: "#6b7280",
       fontSize: "14px",
-      marginBottom: "8px"
+      marginBottom: "8px",
     },
     statValue: {
       fontSize: "32px",
       fontWeight: "bold",
-      color: "#1f2937"
+      color: "#1f2937",
     },
     menuList: {
       listStyle: "none",
-      padding: 0
+      padding: 0,
     },
     menuItem: {
       padding: "12px 16px",
@@ -107,17 +107,18 @@ export default function CustomerDashboard() {
       background: "#f3f4f6",
       borderRadius: "8px",
       cursor: "pointer",
-      transition: "all 0.2s"
-    }
+      transition: "all 0.2s",
+    },
   };
 
   const menuItems = [
+    { name: "My Service Requests", path: "/customer-service-requests" },
     { name: "Book Appointment", path: "/customer/book-appointment" },
     { name: "My Appointments", path: "/customer/appointments" },
     { name: "My Vehicles", path: "/customer/vehicles" },
     { name: "Available Services", path: "/customer/services" },
     { name: "Service History", path: "/customer/history" },
-    { name: "My Profile", path: "/customer/profile" }
+    { name: "My Profile", path: "/customer/profile" },
   ];
 
   return (
@@ -127,11 +128,11 @@ export default function CustomerDashboard() {
         <div style={styles.userInfo}>
           <span style={styles.badge}>CUSTOMER</span>
           <span>{user.name}</span>
-          <button 
+          <button
             style={styles.logoutBtn}
             onClick={handleLogout}
-            onMouseEnter={(e) => e.target.style.background = "#1d4ed8"}
-            onMouseLeave={(e) => e.target.style.background = "#2563eb"}
+            onMouseEnter={(e) => (e.target.style.background = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.background = "#2563eb")}
           >
             Logout
           </button>
@@ -162,7 +163,7 @@ export default function CustomerDashboard() {
           <h2 style={styles.cardTitle}>Quick Actions</h2>
           <ul style={styles.menuList}>
             {menuItems.map((item, index) => (
-              <li 
+              <li
                 key={index}
                 style={styles.menuItem}
                 onClick={() => navigate(item.path)}

@@ -25,9 +25,11 @@ export default function AddEmployee() {
 
       // Create employee with role
       const employeeData = { ...form, role: "employee" };
-      const res = await API.post("/auth/signup", employeeData);
+      await API.post("/auth/signup", employeeData);
       
       setSuccess(`Employee created successfully! Email: ${form.email}, Password: ${form.password}`);
+      // Navigate to employee list after successful creation
+      navigate('/employees');
       setForm({ name: "", email: "", password: "" });
       setLoading(false);
     } catch (err) {

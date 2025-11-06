@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import inventoryApi from '../services/inventoryApi';
 import PartForm from '../components/PartForm';
 import { INVENTORY_CONFIG } from '../config/inventoryConfig';
@@ -20,23 +20,20 @@ const PartsManagement = () => {
   });
   const [pagination, setPagination] = useState({});
 
-  useEffect(() => {
-    fetchParts();
-  }, [filters]);
-
-  const fetchParts = async () => {
+  const fetchParts = useCallback(async () => {
     try {
       setLoading(true);
       const queryParams = {};
-      Object.keys(filters).forEach(key => {
-        if (filters[key] && filters[key] !== 'all') {
-          queryParams[key] = filters[key];
-        }
-      });
+      if (filters.search) queryParams.search = filters.search;
+      if (filters.category !== 'all') queryParams.category = filters.category;
+      if (filters.stockStatus !== 'all') queryParams.stockStatus = filters.stockStatus;
+      queryParams.page = filters.page;
+      queryParams.limit = filters.limit;
 
-      const response = await inventoryApi.getAllParts(queryParams);
-      setParts(response.data);
-      setPagination(response.pagination);
+      const response = await inventoryApi.getParts(queryParams);
+      setParts(response.data.items);
+      setPagination(response.data.pagination);
+      setError('');
     } catch (err) {
       console.error('Fetch parts error:', err);
       console.error('Error response:', err.response?.data);
@@ -82,7 +79,11 @@ const PartsManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchParts();
+  }, [fetchParts]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

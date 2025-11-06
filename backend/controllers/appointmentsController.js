@@ -1,4 +1,9 @@
 const Appointment = require("../models/appointment");
+const Notification = require("../models/notification");
+const User = require("../models/user");
+const Vehicle = require("../models/vehicle");
+const Service = require("../models/service");
+const emailService = require("../services/emailService");
 
 exports.listAppointments = async (req, res) => {
   try {
