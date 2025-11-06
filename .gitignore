@@ -1,3 +1,4 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # Environment Variables - DO NOT COMMIT
 .env
@@ -9,43 +10,133 @@
 
 backend/.env
 frontend/.env
+.frontend/env
+.backend/env
 
 # Dependencies
 node_modules/
+/node_modules
+/.pnp
+.pnp.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 package-lock.json
 yarn.lock
 
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+/coverage
+coverage/
+*.lcov
+.nyc_output
+
 # Build outputs
+/build
 build/
 dist/
-*.log
+/production
+.next
+out
+.nuxt
+.cache
+.parcel-cache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # IDE and Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.iml
+*.iws
+*.ipr
 *~
 
 # OS files
 .DS_Store
 .DS_Store?
 ._*
+.AppleDouble
+.LSOverride
 .Spotlight-V100
 .Trashes
 ehthumbs.db
 Desktop.ini
+Thumbs.db
+Icon?
 
+# Temporary files
+tmp/
+temp/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Application specific
+uploads/
+public/uploads/
+storage/
 
 # Logs
+logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-
-# OS
-.DS_Store
-
-Thumbs.db

@@ -5,6 +5,9 @@ import Home from "./pages/home";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
 import Dashboard from "./pages/Dashboard";
+import Bookings from "./pages/Bookings";
+import Customers from "./pages/Customers";
+import Staff from "./pages/Staff";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
@@ -155,6 +158,32 @@ function App() {
           element={
             <PrivateRoute>
               <ChatBot />
+            </PrivateRoute>
+          }
+        />
+        
+        {/* Additional routes from Employee-dashboard branch */}
+        <Route
+          path="/bookings"
+          element={
+            <PrivateRoute>
+              <Bookings />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            <PrivateRoute>
+              <Customers />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/staff"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Staff />
             </PrivateRoute>
           }
         />

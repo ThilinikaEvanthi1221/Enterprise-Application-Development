@@ -78,3 +78,9 @@ export const getProject = (id) => API.get(`/projects/${id}`);
 export const approveProject = (id, data) =>
   API.patch(`/projects/${id}/approve`, data);
 export const deleteProject = (id) => API.delete(`/projects/${id}`);
+export const getAllBookings = () => API.get("/bookings");
+export const getCustomers = () => API.get("/customers");
+export const getStaff = () => API.get("/staff");
+
+// Export the API instance as default for inventory management
+export default API;

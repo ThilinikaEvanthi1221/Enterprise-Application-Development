@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, Routes, Route } from "react-router-dom";
 import { getDashboardStats } from "../services/api";
+import Bookings from "./Bookings";
+import Customers from "./Customers";
+import Staff from "./Staff";
+import InventoryDashboard from "../inventory-management/pages/InventoryDashboard";
+import Reports from "../inventory-management/pages/Reports";
+import PartsManagement from "../inventory-management/pages/PartsManagement";
+import StockAdjustment from "../inventory-management/pages/StockAdjustment";
 import "./Dashboard.css";
 
 export default function EmployeeDashboard() {
@@ -13,6 +20,7 @@ export default function EmployeeDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState("dashboard");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -84,13 +92,8 @@ export default function EmployeeDashboard() {
     navigate("/login");
   };
 
-  if (loading) {
-    return (
-      <div className="dashboard-container">
-        <div className="loading">Loading...</div>
-      </div>
-    );
-  }
+  // Removed global loading check - render UI immediately
+  // Only show loading in specific content areas
 
   return (
     <div className="dashboard-container">
@@ -202,7 +205,7 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Staff Management
-          </a>
+          </Link>
           <a href="#notifications" className="nav-item">
             <svg
               className="nav-icon"
@@ -298,8 +301,39 @@ export default function EmployeeDashboard() {
           </div>
         </header>
 
-        {/* Dashboard Stats */}
-        <div className="dashboard-stats">
+        {/* Nested Routes Content */}
+        <Routes>
+          <Route path="/" element={<DashboardHome stats={stats} formatDate={formatDate} getStatusColor={getStatusColor} />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/staff" element={<Staff />} />
+          <Route path="/inventory" element={<InventoryDashboard />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/parts" element={<PartsManagement />} />
+          <Route path="/stock-adjustment" element={<StockAdjustment />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
+// Dashboard Home Component (the main dashboard view)
+function DashboardHome({ stats, formatDate, getStatusColor }) {
+  // Simple loading state - stats will be empty on first render
+  const isLoading = stats.recentBookings === undefined || stats.totalProjects === undefined;
+  
+  if (isLoading) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+        <div style={{ fontSize: '18px' }}>Loading dashboard data...</div>
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      {/* Dashboard Stats */}
+      <div className="dashboard-stats">
           {/* Total Projects Assigned */}
           <div className="stat-card">
             <div className="stat-header">
@@ -474,7 +508,6 @@ export default function EmployeeDashboard() {
             </table>
           </div>
         </div>
-      </main>
-    </div>
-  );
+      </>
+    );
 }

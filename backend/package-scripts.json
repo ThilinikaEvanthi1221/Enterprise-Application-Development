@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "init-db": "node scripts/initializeDatabase.js",
+    "seed-data": "node scripts/initializeDatabase.js",
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  }
+}
