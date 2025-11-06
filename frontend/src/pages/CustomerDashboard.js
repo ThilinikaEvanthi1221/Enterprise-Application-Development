@@ -244,23 +244,25 @@ export default function CustomerDashboard() {
               )}
               <ul style={styles.menuList}>
                 {menuItems.map((item, index) => (
-              <li
-                key={index}
-                style={styles.menuItem}
-                onClick={() => navigate(item.path)}
-                onMouseEnter={(e) => {
-                  e.target.style.background = "#7c3aed";
-                  e.target.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = "#f3f4f6";
-                  e.target.style.color = "black";
-                }}
-              >
-                {item.name}
-              </li>
-            ))}
-          </ul>
+                  <li
+                    key={index}
+                    style={styles.menuItem}
+                    onClick={() => navigate(item.path)}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#7c3aed";
+                      e.target.style.color = "white";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "#f3f4f6";
+                      e.target.style.color = "black";
+                    }}
+                  >
+                    {item.name}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </div>
     </div>
