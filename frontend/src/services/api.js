@@ -124,5 +124,10 @@ export const getVehicleByNumber = (vehicleNumber) => {
 export const getProfile = () => API.get("/profile");
 export const updateProfile = (data) => API.put("/profile", data);
 
+// Add vehicles by owner
+export const getVehiclesByOwner = (userId) => {
+  return API.get(`/vehicles/owner/${userId}`);
+};
+
 // Export the API instance as default for inventory management
 export default API;

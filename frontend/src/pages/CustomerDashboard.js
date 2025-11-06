@@ -155,7 +155,7 @@ export default function CustomerDashboard() {
     { name: "My Vehicles", path: "/customer/vehicles" },
     { name: "Available Services", path: "/customer/services" },
     { name: "Service History", path: "/customer/history" },
-    { name: "My Profile", path: "/customer/profile" },
+    { name: "Profile", path: "/profile" },
   ];
 
   return (
