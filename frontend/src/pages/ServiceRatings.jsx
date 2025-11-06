@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchRatings, fetchSummary } from '../api'
+import { NavLink } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { FiSearch, FiHome, FiCalendar, FiUsers, FiBox, FiBriefcase, FiBell, FiStar, FiMail } from 'react-icons/fi'
 
@@ -25,7 +26,7 @@ export default function ServiceRatings() {
 
   return (
     <div className="layout">
-      <aside className="sidebar">
+      <aside className="sidebar employee">
         <div className="brand">
           <div className="logo">MMM</div>
           <div className="brandName">AutoServicePro</div>
