@@ -86,7 +86,16 @@ exports.getMyServices = async (req, res) => {
     const { status, vehicleId } = req.query;
 
     const filter = { customer: customerId };
-    if (status) filter.status = status;
+
+    // Handle multiple statuses (comma-separated)
+    if (status) {
+      if (status.includes(",")) {
+        filter.status = { $in: status.split(",").map((s) => s.trim()) };
+      } else {
+        filter.status = status;
+      }
+    }
+
     if (vehicleId) filter.vehicle = vehicleId;
 
     const services = await Service.find(filter)
