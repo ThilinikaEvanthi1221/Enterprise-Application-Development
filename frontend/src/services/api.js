@@ -22,8 +22,59 @@ export const getUsers = () => API.get("/users");
 export const deleteUser = (id) => API.delete(`/users/${id}`);
 
 export const getVehicles = () => API.get("/vehicles");
+export const getMyVehicles = () => API.get("/vehicles/my-vehicles");
 export const getServices = () => API.get("/services");
 export const getAppointments = () => API.get("/appointments");
 export const getTimeLogs = () => API.get("/time-logs");
 export const getDashboardMetrics = () => API.get("/dashboard/metrics");
 export const getDashboardStats = () => API.get("/dashboard/stats");
+
+// Service Requests API
+// Customer endpoints
+export const requestService = (data) => API.post("/services/request", data);
+export const getMyServices = (params) =>
+  API.get("/services/my-services", { params });
+export const getMyService = (id) => API.get(`/services/${id}`);
+export const cancelMyService = (id) => API.patch(`/services/${id}/cancel`);
+
+// Employee endpoints
+export const getAssignedServices = (params) =>
+  API.get("/services/assigned", { params });
+export const getAvailableServices = () => API.get("/services/available");
+export const claimService = (id) => API.post(`/services/${id}/claim`);
+export const updateServiceProgress = (id, data) =>
+  API.patch(`/services/${id}/progress`, data);
+
+// Admin endpoints
+export const getAllServices = () => API.get("/services");
+export const getService = (id) => API.get(`/services/${id}`);
+export const approveService = (id, data) =>
+  API.patch(`/services/${id}/approve`, data);
+export const deleteService = (id) => API.delete(`/services/${id}`);
+
+// Project/Modification Requests API
+// Customer endpoints
+export const requestProject = (data) => API.post("/projects/request", data);
+export const getMyProjects = (params) =>
+  API.get("/projects/my-projects", { params });
+export const getMyProject = (id) => API.get(`/projects/${id}`);
+export const cancelMyProject = (id) => API.patch(`/projects/${id}/cancel`);
+
+// Employee endpoints
+export const getAssignedProjects = (params) =>
+  API.get("/projects/assigned", { params });
+export const getAvailableProjects = () => API.get("/projects/available");
+export const claimProject = (id) => API.post(`/projects/${id}/claim`);
+export const updateProjectProgress = (id, data) =>
+  API.patch(`/projects/${id}/progress`, data);
+export const addMilestone = (id, data) =>
+  API.post(`/projects/${id}/milestones`, data);
+export const completeMilestone = (id, milestoneId) =>
+  API.patch(`/projects/${id}/milestones/${milestoneId}/complete`);
+
+// Admin endpoints
+export const getAllProjects = () => API.get("/projects");
+export const getProject = (id) => API.get(`/projects/${id}`);
+export const approveProject = (id, data) =>
+  API.patch(`/projects/${id}/approve`, data);
+export const deleteProject = (id) => API.delete(`/projects/${id}`);

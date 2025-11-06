@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import Layout from "../components/Layout";
 import MetricCard from "../components/MetricCard";
 import { getDashboardMetrics } from "../services/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
+
   // Appointments chart data
   const appointmentsData = [
     { month: "Jan", total: 45, completed: 38 },
@@ -30,7 +40,13 @@ const Dashboard = () => {
     { day: "30 Jan", hours: 8.0 },
   ];
 
-  const [totals, setTotals] = useState({ users: 0, vehicles: 0, services: 0, appointments: 0, timeLogs: 0 });
+  const [totals, setTotals] = useState({
+    users: 0,
+    vehicles: 0,
+    services: 0,
+    appointments: 0,
+    timeLogs: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -51,16 +67,21 @@ const Dashboard = () => {
             localStorage.removeItem("token");
             window.location.href = "/login";
           } else {
-            setError("Failed to load dashboard metrics: " + (e.response?.data?.msg || e.message));
+            setError(
+              "Failed to load dashboard metrics: " +
+                (e.response?.data?.msg || e.message)
+            );
           }
         }
       } finally {
         if (isMounted) setLoading(false);
       }
     };
-    
+
     loadData();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {
@@ -88,8 +109,8 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="p-6 bg-gray-50 min-h-screen">
-        {/* Quick Action Button */}
-        <div className="mb-6">
+        {/* Quick Action Buttons */}
+        <div className="mb-6 flex gap-4">
           <button
             onClick={() => navigate("/add-employee")}
             style={{
@@ -102,32 +123,51 @@ const Dashboard = () => {
               borderRadius: "8px",
               cursor: "pointer",
               transition: "all 0.2s",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
             }}
-            onMouseEnter={(e) => e.target.style.background = "#1d4ed8"}
-            onMouseLeave={(e) => e.target.style.background = "#2563eb"}
+            onMouseEnter={(e) => (e.target.style.background = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.background = "#2563eb")}
           >
             + Add New Employee
+          </button>
+          <button
+            onClick={() => navigate("/admin-services")}
+            style={{
+              padding: "12px 24px",
+              background: "#7c3aed",
+              color: "white",
+              fontSize: "16px",
+              fontWeight: "600",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+            }}
+            onMouseEnter={(e) => (e.target.style.background = "#6d28d9")}
+            onMouseLeave={(e) => (e.target.style.background = "#7c3aed")}
+          >
+            🔧 Manage Service Requests
           </button>
         </div>
 
         {/* Metric Cards - Top Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
-          <MetricCard 
+          <MetricCard
             title="Total Users"
             value={String(totals.users)}
             change="+5.2%"
             trend="up"
             iconType="👥"
           />
-          <MetricCard 
+          <MetricCard
             title="Total Vehicles"
             value={String(totals.vehicles)}
             change="+2.1%"
             trend="up"
             iconType="🚗"
           />
-          <MetricCard 
+          <MetricCard
             title="Total Appointments"
             value={String(totals.appointments)}
             change="+12.5%"
@@ -138,21 +178,21 @@ const Dashboard = () => {
 
         {/* Metric Cards - Second Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <MetricCard 
+          <MetricCard
             title="Total Services"
             value={String(totals.services)}
             change="+3.0%"
             trend="up"
             iconType="🔧"
           />
-          <MetricCard 
+          <MetricCard
             title="Hours Logged"
             value={String(totals.timeLogs)}
             change="+8.2%"
             trend="up"
             iconType="⏱️"
           />
-          <MetricCard 
+          <MetricCard
             title="ChatBot Queries"
             value={"-"}
             change="+15.3%"
@@ -167,7 +207,9 @@ const Dashboard = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">Appointments Overview</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                  Appointments Overview
+                </h3>
                 <p className="text-sm text-gray-500">Last 7 months</p>
               </div>
               <div className="flex gap-4">
@@ -186,27 +228,27 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
                 <YAxis stroke="#6b7280" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                   }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="total" 
-                  stroke="#3b82f6" 
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#3b82f6"
                   strokeWidth={2}
-                  dot={{ fill: '#3b82f6', r: 4 }}
+                  dot={{ fill: "#3b82f6", r: 4 }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="completed" 
-                  stroke="#60a5fa" 
+                <Line
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="#60a5fa"
                   strokeWidth={2}
-                  dot={{ fill: '#60a5fa', r: 4 }}
+                  dot={{ fill: "#60a5fa", r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -215,7 +257,9 @@ const Dashboard = () => {
           {/* Time Logs Chart */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">Time Logs (Weekly)</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                Time Logs (Weekly)
+              </h3>
               <p className="text-sm text-gray-500">Hours logged per day</p>
             </div>
             <ResponsiveContainer width="100%" height={280}>
@@ -223,19 +267,15 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="day" stroke="#6b7280" fontSize={12} />
                 <YAxis stroke="#6b7280" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                   }}
                 />
-                <Bar 
-                  dataKey="hours" 
-                  fill="#3b82f6" 
-                  radius={[4, 4, 0, 0]}
-                />
+                <Bar dataKey="hours" fill="#3b82f6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
