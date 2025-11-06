@@ -1,16 +1,44 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: "http://localhost:5000/api" });
+const API = axios.create({ 
+  baseURL: "http://localhost:5000/api",
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
+});
 
 // Attach JWT token if present
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${token}`;
+API.interceptors.request.use(
+  (config) => {
+    console.log('Making request to:', config.url);
+    console.log('Request data:', config.data);
+    
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Add response interceptor for better error handling
+API.interceptors.response.use(
+  (response) => {
+    console.log('Response received:', response.data);
+    return response;
+  },
+  (error) => {
+    console.error('Response error:', error);
+    console.error('Error response:', error.response);
+    return Promise.reject(error);
+  }
+);
 
 // Auth
 export const signup = (data) => API.post("/auth/signup", data);

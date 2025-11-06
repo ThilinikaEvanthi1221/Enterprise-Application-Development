@@ -12,6 +12,19 @@ const {
 
 dotenv.config();
 
+const app = express();
+
+// Configure CORS
+app.use(
+  cors({
+    origin: "http://localhost:3000", // React app's address
+    credentials: true,
+  })
+);
+
+// Body parser
+app.use(express.json());
+
 // Connect to database and run migrations on startup
 (async () => {
   try {
@@ -63,25 +76,103 @@ dotenv.config();
   }
 })();
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+// Test endpoint
+app.get("/api/test", (req, res) => {
+  res.json({ msg: "Backend server is running!" });
+});
 
-// Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
-app.use("/api/vehicles", require("./routes/vehicleRoutes"));
-app.use("/api/services", require("./routes/serviceRoutes"));
-app.use("/api/projects", require("./routes/projectRoutes"));
-app.use("/api/appointments", require("./routes/appointmentRoutes"));
-app.use("/api/time-logs", require("./routes/timeLogRoutes"));
-app.use("/api/dashboard", require("./routes/dashboardRoutes"));
-app.use("/api/customers", require("./routes/customerRoutes"));
-app.use("/api/bookings", require("./routes/bookingRoutes"));
-app.use("/api/staff", require("./routes/staffRoutes"));
+// Routes with error handling
+try {
+  app.use("/api/auth", require("./routes/authRoutes"));
+  console.log("✓ Auth routes loaded");
+} catch (err) {
+  console.error("✗ Auth routes failed:", err.message);
+}
+
+try {
+  app.use("/api/users", require("./routes/userRoutes"));
+  console.log("✓ Users routes loaded");
+} catch (err) {
+  console.error("✗ Users routes failed:", err.message);
+}
+
+try {
+  app.use("/api/vehicles", require("./routes/vehicleRoutes"));
+  console.log("✓ Vehicles routes loaded");
+} catch (err) {
+  console.error("✗ Vehicles routes failed:", err.message);
+}
+
+try {
+  app.use("/api/services", require("./routes/serviceRoutes"));
+  console.log("✓ Services routes loaded");
+} catch (err) {
+  console.error("✗ Services routes failed:", err.message);
+}
+
+try {
+  app.use("/api/projects", require("./routes/projectRoutes"));
+  console.log("✓ Projects routes loaded");
+} catch (err) {
+  console.error("✗ Projects routes failed:", err.message);
+}
+
+try {
+  app.use("/api/appointments", require("./routes/appointmentRoutes"));
+  console.log("✓ Appointments routes loaded");
+} catch (err) {
+  console.error("✗ Appointments routes failed:", err.message);
+}
+
+try {
+  app.use("/api/time-logs", require("./routes/timeLogRoutes"));
+  console.log("✓ Time-logs routes loaded");
+} catch (err) {
+  console.error("✗ Time-logs routes failed:", err.message);
+}
+
+try {
+  app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+  console.log("✓ Dashboard routes loaded");
+} catch (err) {
+  console.error("✗ Dashboard routes failed:", err.message);
+}
+
+try {
+  app.use("/api/customers", require("./routes/customerRoutes"));
+  console.log("✓ Customers routes loaded");
+} catch (err) {
+  console.error("✗ Customers routes failed:", err.message);
+}
+
+try {
+  app.use("/api/bookings", require("./routes/bookingRoutes"));
+  console.log("✓ Bookings routes loaded");
+} catch (err) {
+  console.error("✗ Bookings routes failed:", err.message);
+}
+
+try {
+  app.use("/api/staff", require("./routes/staffRoutes"));
+  console.log("✓ Staff routes loaded");
+} catch (err) {
+  console.error("✗ Staff routes failed:", err.message);
+}
+
+try {
+  app.use("/api/notifications", require("./routes/notificationRoutes"));
+  console.log("✓ Notifications routes loaded");
+} catch (err) {
+  console.error("✗ Notifications routes failed:", err.message);
+}
 
 // Inventory Management Routes
-app.use("/api/inventory", require("./inventory-management").routes);
+try {
+  app.use("/api/inventory", require("./inventory-management").routes);
+  console.log("✓ Inventory routes loaded");
+} catch (err) {
+  console.error("✗ Inventory routes failed:", err.message);
+}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

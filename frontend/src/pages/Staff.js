@@ -6,6 +6,7 @@ export default function Staff() {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilter, setShowFilter] = useState("all"); // all | last30 | thisYear
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {

@@ -7,6 +7,7 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState("week"); // day | week | month | year
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     // Set user info
