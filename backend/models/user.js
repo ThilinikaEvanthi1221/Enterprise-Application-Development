@@ -4,8 +4,13 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String, sparse: true, unique: true },
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ["customer", "employee", "admin"], default: "customer" }
+  password: { type: String, required: function() {
+    // Password is required only if googleId is not present
+    return !this.googleId;
+  }},
+  role: { type: String, enum: ["customer", "employee", "admin"], default: "customer" },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 });
 
 // Exclude password from JSON responses
