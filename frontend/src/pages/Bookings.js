@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { getAllBookings } from "../services/api";
 import "./Bookings.css";
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState({ name: "Jason Miller", role: "employee" });
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState("week"); // day | week | month | year
 

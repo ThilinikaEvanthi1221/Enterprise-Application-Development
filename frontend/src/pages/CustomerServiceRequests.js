@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { getMyVehicles } from "../services/api";
 
 const CustomerServiceRequests = () => {
-  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
