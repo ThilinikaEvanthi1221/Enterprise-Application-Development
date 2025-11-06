@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Vehicle = require("../models/vehicle");
 
+// Get all vehicles (admin/employee use)
 exports.listVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find().populate("owner", "name email");
