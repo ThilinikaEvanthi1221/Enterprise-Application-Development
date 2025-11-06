@@ -1,47 +1,78 @@
 import Appointment from "../models/appointment.js";
 import { sendConfirmationEmail } from "../utils/sendEmail.js";
 
-// Customer books appointment
+// 🧾 Customer books appointment
 export const createAppointment = async (req, res) => {
   try {
     const newAppointment = new Appointment(req.body);
     await newAppointment.save();
-    res.status(201).json({ message: "Appointment booked successfully", appointment: newAppointment });
+
+    res.status(201).json({
+      success: true,
+      message: "Appointment booked successfully!",
+      appointment: newAppointment,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("❌ Error creating appointment:", error);
+    res.status(400).json({
+      success: false,
+      message: "Failed to create appointment.",
+      error: error.message,
+    });
   }
 };
 
-// Admin views all appointments
+// 👀 Admin views all appointments
 export const getAllAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find().sort({ createdAt: -1 });
-    res.json(appointments);
+    res.status(200).json({
+      success: true,
+      appointments,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("❌ Error fetching appointments:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch appointments.",
+      error: error.message,
+    });
   }
 };
 
-// Admin updates appointment status
+// 🛠 Admin updates appointment status
 export const updateAppointmentStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
-    const appointment = await Appointment.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+    const appointment = await Appointment.findById(id);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found.",
+      });
+    }
 
-    if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+    appointment.status = status;
+    await appointment.save();
 
-    if (status === "confirmed" || status === "completed") {
+    // ✉️ Send email only if confirmed or completed
+    if (["confirmed", "completed"].includes(status)) {
       await sendConfirmationEmail(appointment);
     }
 
-    res.json({ message: "Status updated", appointment });
+    res.status(200).json({
+      success: true,
+      message: `Appointment status updated to '${status}'.`,
+      appointment,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("❌ Error updating status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update appointment status.",
+      error: error.message,
+    });
   }
 };

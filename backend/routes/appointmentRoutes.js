@@ -7,8 +7,14 @@ import {
 
 const router = express.Router();
 
-router.post("/", createAppointment); // Customer books
-router.get("/", getAllAppointments); // Admin views all
-router.put("/:id/status", updateAppointmentStatus); // Admin updates status
+// 🧩 Customer creates a new appointment (email will be sent after confirmation)
+router.post("/", createAppointment);
+
+// 🧩 Admin fetches all appointments
+router.get("/", getAllAppointments);
+
+// 🧩 Admin updates appointment status (confirmation/completion email sent here)
+router.put("/:id/status", updateAppointmentStatus);
 
 export default router;
+
