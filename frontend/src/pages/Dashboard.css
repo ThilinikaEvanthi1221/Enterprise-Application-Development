@@ -812,3 +812,44 @@
 .profile-avatar:hover .avatar-hover-overlay {
   opacity: 1;
 }
+
+/* Profile left container improvements */
+.section {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  margin-top: 16px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+.form-grid.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .form-grid.two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Make avatar overlay show on hover (desktop) */
+.profile-avatar:hover .avatar-hover-overlay {
+  opacity: 1;
+}

@@ -150,7 +150,7 @@ export default function CustomerDashboard() {
 
   const menuItems = [
     { name: "My Service Requests", path: "/customer-service-requests" },
-    { name: "Book Appointment", path: "/customer/book-appointment" },
+    { name: "Book Appointment", path: "/vehicle-register" },
     { name: "My Appointments", path: "/customer/appointments" },
     { name: "My Vehicles", path: "/customer/vehicles" },
     { name: "Available Services", path: "/customer/services" },

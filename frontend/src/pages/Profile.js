@@ -29,20 +29,15 @@ export default function Profile() {
   const API_ORIGIN =
     process.env.REACT_APP_API_ORIGIN || "http://localhost:5000";
 
-  const buildImgSrc = (p) => {
-    if (!p) return "";
-    return p.startsWith("http") ? p : `${API_ORIGIN}${p}`;
-  };
+  const buildImgSrc = (p) =>
+    p ? (p.startsWith("http") ? p : `${API_ORIGIN}${p}`) : "";
 
   // Correct defaults: 260 desktop, 80 mobile
   const [sidebarPad, setSidebarPad] = useState(
     typeof window !== "undefined" && window.innerWidth <= 768 ? 8 : 8
   );
-
   useEffect(() => {
-    function onResize() {
-      setSidebarPad(window.innerWidth <= 768 ? 8 : 8);
-    }
+    const onResize = () => setSidebarPad(window.innerWidth <= 768 ? 8 : 8);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -160,7 +155,6 @@ export default function Profile() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
     >
       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-3h8l2 3h3a2 2 0 0 1 2 2z" />
       <circle cx="12" cy="13" r="4" />
@@ -194,21 +188,24 @@ export default function Profile() {
           className="profile-layout"
           style={{ width: "100%", maxWidth: 1100 }}
         >
+          {/* LEFT: Profile (restructured) */}
           <div className="profile-left">
             <div className="auth-card">
-              <header style={{ marginBottom: "2rem", textAlign: "center" }}>
-                <h1 className="auth-title">Profile</h1>
+              <header style={{ marginBottom: "1.25rem" }}>
+                <h1 className="auth-title" style={{ marginBottom: 4 }}>
+                  Profile
+                </h1>
                 <p className="auth-subtitle">
                   Manage your personal information
                 </p>
               </header>
 
               <div className="profile-content">
+                {/* Header row with avatar + name/email */}
                 <div
                   className="profile-header"
-                  style={{ alignItems: "center" }}
+                  style={{ alignItems: "center", gap: "1.25rem" }}
                 >
-                  {/* Avatar block with overlay + icon button + link */}
                   <div
                     className="profile-avatar"
                     style={{
@@ -218,16 +215,17 @@ export default function Profile() {
                       borderRadius: "50%",
                       overflow: "hidden",
                       cursor: "pointer",
+                      flexShrink: 0,
+                      overflow: "visible",
                     }}
                     onClick={() => setAvatarOpen(true)}
                     title="Change profile picture"
                     role="button"
                     tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        setAvatarOpen(true);
-                      }
-                    }}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      setAvatarOpen(true)
+                    }
                   >
                     {profile?.profileImage ? (
                       <img
@@ -259,9 +257,10 @@ export default function Profile() {
                       </div>
                     )}
 
-                    {/* Hover overlay (desktop) */}
+                    {/* Hover overlay */}
                     <div
                       aria-hidden="true"
+                      className="avatar-hover-overlay"
                       style={{
                         position: "absolute",
                         inset: 0,
@@ -274,7 +273,6 @@ export default function Profile() {
                         transition: "opacity .2s",
                         pointerEvents: "none",
                       }}
-                      className="avatar-hover-overlay"
                     >
                       <div
                         style={{
@@ -290,7 +288,7 @@ export default function Profile() {
                       </div>
                     </div>
 
-                    {/* Camera FAB (always visible) */}
+                    {/* Camera fab */}
                     <button
                       type="button"
                       aria-label="Change profile picture"
@@ -319,83 +317,132 @@ export default function Profile() {
                     </button>
                   </div>
 
-                  <div className="profile-email" style={{ marginLeft: 16 }}>
-                    <label>Email</label>
-                    <span>{profile?.email}</span>
-                    <div style={{ marginTop: 8 }}>
-                      <button
-                        type="button"
-                        onClick={() => setAvatarOpen(true)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "#1a56db",
-                          fontSize: 14,
-                          fontWeight: 500,
-                          textDecoration: "underline",
-                          cursor: "pointer",
-                          padding: 0,
-                        }}
-                      >
-                        Change photo
-                      </button>
+                  <div
+                    className="profile-email"
+                    style={{ flex: 1, minWidth: 0 }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#6b7280",
+                        marginBottom: 4,
+                      }}
+                    >
+                      Signed in as
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 600,
+                        color: "#111827",
+                      }}
+                    >
+                      {profile?.name}
                     </div>
                   </div>
                 </div>
 
+                {/* Sections */}
                 <form onSubmit={handleSubmit} className="profile-form">
-                  <div className="form-group">
-                    <label>Full Name</label>
-                    <input
-                      type="text"
-                      className="auth-input"
-                      value={form.name}
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
-                      placeholder="Your full name"
-                    />
+                  {/* Account section */}
+                  <div className="section">
+                    <h3 className="section-title">Account</h3>
+                    <div className="form-grid two">
+                      <div className="form-group">
+                        <label>Full Name</label>
+                        <input
+                          type="text"
+                          className="auth-input"
+                          value={form.name}
+                          onChange={(e) =>
+                            setForm({ ...form, name: e.target.value })
+                          }
+                          placeholder="Your full name"
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Email (read-only)</label>
+                        <input
+                          type="email"
+                          className="auth-input"
+                          value={profile?.email || ""}
+                          disabled
+                          readOnly
+                          style={{ background: "#f9fafb", color: "#6b7280" }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="form-group">
-                    <label>Address</label>
-                    <textarea
-                      className="auth-input"
-                      value={form.address}
-                      onChange={(e) =>
-                        setForm({ ...form, address: e.target.value })
-                      }
-                      placeholder="Your address"
-                      rows="3"
-                    />
+                  {/* Contact section */}
+                  <div className="section">
+                    <h3 className="section-title">Contact</h3>
+                    <div className="form-grid two">
+                      <div
+                        className="form-group"
+                        style={{ gridColumn: "1 / -1" }}
+                      >
+                        <label>Address</label>
+                        <textarea
+                          className="auth-input"
+                          value={form.address}
+                          onChange={(e) =>
+                            setForm({ ...form, address: e.target.value })
+                          }
+                          placeholder="Your address"
+                          rows="3"
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Phone Number</label>
+                        <input
+                          type="tel"
+                          className="auth-input"
+                          value={form.phone}
+                          onChange={(e) =>
+                            setForm({ ...form, phone: e.target.value })
+                          }
+                          placeholder="Your phone number"
+                        />
+                        <small style={{ color: "#6b7280" }}>
+                          Example: 07XXXXXXXX
+                        </small>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="form-group">
-                    <label>Phone Number</label>
-                    <input
-                      type="tel"
-                      className="auth-input"
-                      value={form.phone}
-                      onChange={(e) =>
-                        setForm({ ...form, phone: e.target.value })
+                  {/* Actions */}
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      className="logout-btn"
+                      onClick={() =>
+                        setForm({
+                          name: profile?.name || "",
+                          address: profile?.address || "",
+                          phone: profile?.phone || "",
+                        })
                       }
-                      placeholder="Your phone number"
-                    />
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="submit"
+                      className="auth-button"
+                      disabled={saving}
+                      style={{ minWidth: 140 }}
+                    >
+                      {saving ? "Saving..." : "Save Changes"}
+                    </button>
                   </div>
-
-                  <button
-                    type="submit"
-                    className="auth-button"
-                    disabled={saving}
-                    style={{ width: "100%", marginTop: "1.5rem" }}
-                  >
-                    {saving ? "Saving..." : "Save Changes"}
-                  </button>
                 </form>
               </div>
             </div>
           </div>
 
+          {/* RIGHT: Vehicles (unchanged) */}
           <aside className="profile-right">
             <div className="auth-card">
               <header style={{ marginBottom: "1rem" }}>
