@@ -142,7 +142,7 @@ export default function EmployeeDashboard() {
             </svg>
             My Service Tasks
           </a>
-          <a href="#bookings" className="nav-item">
+          <a onClick={() => navigate("/employee/bookings")} className="nav-item" style={{ cursor: "pointer" }}>
             <svg
               className="nav-icon"
               fill="none"
@@ -158,7 +158,7 @@ export default function EmployeeDashboard() {
             </svg>
             Bookings
           </a>
-          <a href="#customers" className="nav-item">
+          <a onClick={() => navigate("/employee/customers")} className="nav-item" style={{ cursor: "pointer" }}>
             <svg
               className="nav-icon"
               fill="none"
@@ -174,7 +174,7 @@ export default function EmployeeDashboard() {
             </svg>
             Customers
           </a>
-          <a href="#inventory" className="nav-item">
+          <a onClick={() => navigate("/employee/inventory")} className="nav-item" style={{ cursor: "pointer" }}>
             <svg
               className="nav-icon"
               fill="none"
@@ -190,7 +190,7 @@ export default function EmployeeDashboard() {
             </svg>
             Inventory
           </a>
-          <a href="#staff" className="nav-item">
+          <a onClick={() => navigate("/employee/staff")} className="nav-item" style={{ cursor: "pointer" }}>
             <svg
               className="nav-icon"
               fill="none"
@@ -206,7 +206,7 @@ export default function EmployeeDashboard() {
             </svg>
             Staff Management
           </a>
-          <a href="#notifications" className="nav-item">
+          <a onClick={() => navigate("/employee/notifications")} className="nav-item" style={{ cursor: "pointer" }}>
             <svg
               className="nav-icon"
               fill="none"
@@ -222,7 +222,23 @@ export default function EmployeeDashboard() {
             </svg>
             Notifications
           </a>
-          <a href="#ratings" className="nav-item">
+          <a onClick={() => navigate("/employee/reports")} className="nav-item" style={{ cursor: "pointer" }}>
+            <svg
+              className="nav-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Reports
+          </a>
+          <a onClick={() => navigate("/employee/ratings")} className="nav-item" style={{ cursor: "pointer" }}>
             <svg
               className="nav-icon"
               fill="none"
