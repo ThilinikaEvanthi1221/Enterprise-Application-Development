@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link, Routes, Route } from "react-router-dom";
+import { useNavigate, Link, Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { getDashboardStats } from "../services/api";
 import Bookings from "./Bookings";
 import Customers from "./Customers";
@@ -21,6 +21,7 @@ export default function EmployeeDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -106,7 +107,7 @@ export default function EmployeeDashboard() {
           </div>
         </div>
         <nav className="sidebar-nav">
-          <a href="#dashboard" className="nav-item active">
+          <NavLink to="/employee" end className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -121,12 +122,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Dashboard
-          </a>
-          <a
-            onClick={() => navigate("/employee-services")}
-            className="nav-item"
-            style={{ cursor: "pointer" }}
-          >
+          </NavLink>
+          <NavLink to="/employee-services" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -141,8 +138,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             My Service Tasks
-          </a>
-          <a onClick={() => navigate("/employee/bookings")} className="nav-item" style={{ cursor: "pointer" }}>
+          </NavLink>
+          <NavLink to="/employee/bookings" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -157,8 +154,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Bookings
-          </a>
-          <a onClick={() => navigate("/employee/customers")} className="nav-item" style={{ cursor: "pointer" }}>
+          </NavLink>
+          <NavLink to="/employee/customers" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -173,8 +170,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Customers
-          </a>
-          <a onClick={() => navigate("/employee/inventory")} className="nav-item" style={{ cursor: "pointer" }}>
+          </NavLink>
+          <NavLink to="/employee/inventory" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -189,8 +186,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Inventory
-          </a>
-          <a onClick={() => navigate("/employee/staff")} className="nav-item" style={{ cursor: "pointer" }}>
+          </NavLink>
+          <NavLink to="/employee/staff" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -205,8 +202,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Staff Management
-          </a>
-          <a onClick={() => navigate("/employee/notifications")} className="nav-item" style={{ cursor: "pointer" }}>
+          </NavLink>
+          <NavLink to="/employee/notifications" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -221,8 +218,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Notifications
-          </a>
-          <a onClick={() => navigate("/employee/reports")} className="nav-item" style={{ cursor: "pointer" }}>
+          </NavLink>
+          <NavLink to="/employee/reports" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -237,8 +234,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Reports
-          </a>
-          <a onClick={() => navigate("/employee/ratings")} className="nav-item" style={{ cursor: "pointer" }}>
+          </NavLink>
+          <NavLink to="/employee/ratings" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
               fill="none"
@@ -253,7 +250,7 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Service Ratings
-          </a>
+          </NavLink>
         </nav>
       </aside>
 
@@ -262,11 +259,19 @@ export default function EmployeeDashboard() {
         {/* Header */}
         <header className="dashboard-header">
           <div className="header-left">
-            <h1 className="page-title">Employee Dashboard</h1>
-            <div className="greeting">
-              <h2>Hi, {user?.name || "Employee"}</h2>
-              <p>Let's check your Garage today</p>
-            </div>
+            {(() => {
+              const path = location.pathname;
+              let title = "Dashboard";
+              if (path.startsWith("/employee/bookings")) title = "Bookings";
+              else if (path.startsWith("/employee/customers")) title = "Customers";
+              else if (path.startsWith("/employee/staff")) title = "Staff Management";
+              else if (path.startsWith("/employee/inventory")) title = "Inventory";
+              else if (path.startsWith("/employee/reports")) title = "Reports";
+              else if (path.startsWith("/employee/ratings")) title = "Service Ratings";
+              else if (path.startsWith("/employee-services")) title = "My Service Tasks";
+              return <h1 className="page-title">{title}</h1>;
+            })()}
+            <p className="page-subtitle">Let's check your Garage today</p>
           </div>
           <div className="header-right">
             <div className="search-bar">
