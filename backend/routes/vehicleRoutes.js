@@ -7,23 +7,30 @@ const {
   updateVehicle,
   deleteVehicle,
   getVehiclesByOwner,
+  lookupByPlate,
 } = require("../controllers/vehiclesController");
 
 const router = express.Router();
 
-// LIST (admin only)
-router.get("/", verifyToken, listVehicles);
+// Always put static/specific routes before dynamic ones!
 
-// GET by id (any authenticated user)
-router.get("/:id", verifyToken, getVehicle);
+// Lookup by plate number (require auth so ownership can be checked)
+router.get("/lookup", verifyToken, lookupByPlate);
 
-// CREATE vehicle (authenticated users) - sets owner from req.user in controller
+// Vehicles by owner id
+router.get("/owner/:userId", verifyToken, getVehiclesByOwner);
+
+// List all (admin only)
+router.get("/", verifyToken, requireAdmin, listVehicles);
+
+// Create new
 router.post("/", verifyToken, createVehicle);
 
-router.put("/:id", updateVehicle);
-router.delete("/:id", deleteVehicle);
+// Update and delete by id
+router.put("/:id", verifyToken, updateVehicle);
+router.delete("/:id", verifyToken, deleteVehicle);
 
-// vehicles by owner id (current authenticated user)
-router.get("/owner/:userId", verifyToken, getVehiclesByOwner);
+// Get by id (must be last!)
+router.get("/:id", verifyToken, getVehicle);
 
 module.exports = router;

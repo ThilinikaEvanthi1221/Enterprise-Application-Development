@@ -16,13 +16,32 @@ export default function VehicleRegister() {
     try {
       const res = await getVehicleByNumber(plateNumber);
       const vehicle = res.data?.vehicle || res.data;
-      if (vehicle) setFound(vehicle);
-      else setFound(false);
+      setFound(vehicle || false);
     } catch (err) {
-      if (err?.response?.status === 404) setFound(false);
-      else {
-        console.error(err);
+      if (err?.response?.status === 404) {
         setFound(false);
+      } else if (err?.response?.status === 403) {
+        // show message and keep user on register page so they can try another plate or contact support
+        if (err?.response?.data?.unauthorized === 1) {
+          alert(
+            "This plate is registered to another user. If this is your vehicle contact support."
+          );
+        } else {
+          alert("You must be logged in");
+          console.log(err?.response?.data?.unauthorized);
+        }
+
+        setFound(null);
+        // optional: clear plate input or navigate back
+        // setPlateNumber("");
+        // navigate("/vehicle-register");
+      } else if (err?.response?.status === 401) {
+        setFound(null);
+        alert("You must be logged in");
+      } else {
+        console.error(err);
+        alert("Failed to lookup vehicle");
+        setFound(null);
       }
     } finally {
       setLoading(false);
@@ -40,6 +59,12 @@ export default function VehicleRegister() {
       };
       const res = await createVehicle(payload);
       const created = res.data?.vehicle || res.data;
+
+      console.log("Vehicle created successfully:", {
+        response: res.data,
+        status: res.status,
+        vehicle: created,
+      });
       if (!created) throw new Error("No vehicle returned");
       navigate(`/bookings?vehicleId=${created._id || created.id}`);
     } catch (err) {
@@ -55,135 +80,132 @@ export default function VehicleRegister() {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <header className="bookings-header">
-        <div className="header-left">
-          <h1 className="page-title">Vehicle Register</h1>
-          <p className="page-subtitle">Enter plate number to continue</p>
-        </div>
-      </header>
+    <div className="auth-container" style={{ background: "#f3f4f6" }}>
+      <div
+        className="auth-wrapper"
+        style={{ maxWidth: "880px", width: "100%" }}
+      >
+        <div className="auth-card" style={{ width: "100%" }}>
+          <header style={{ marginBottom: "2rem", textAlign: "center" }}>
+            <h1 className="auth-title">Vehicle Registration</h1>
+            <p className="auth-subtitle">
+              Enter your vehicle details to continue
+            </p>
+          </header>
 
-      <div style={{ marginTop: 16, maxWidth: 880 }}>
-        <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-          <input
-            value={plateNumber}
-            onChange={(e) => {
-              setPlateNumber(e.target.value.toUpperCase());
-              setFound(null);
-            }}
-            placeholder="Plate number (e.g. ABC1234)"
-            style={{
-              flex: 1,
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #e5e7eb",
-            }}
-          />
-          <button
-            onClick={checkVehicle}
-            className="btn primary"
-            style={{ minWidth: 110 }}
-          >
-            {loading ? "Checking..." : "Check"}
-          </button>
-        </div>
-
-        {found === null ? null : found === false ? (
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
-              padding: 18,
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>
-              Vehicle not registered — add details
-            </h3>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 12,
-              }}
-            >
+          <div className="search-container" style={{ marginBottom: "1.5rem" }}>
+            <div className="input-group">
               <input
-                placeholder="Make (e.g. Toyota)"
-                value={form.make}
-                onChange={(e) => setForm({ ...form, make: e.target.value })}
-                style={{
-                  padding: 10,
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
+                value={plateNumber}
+                onChange={(e) => {
+                  setPlateNumber(e.target.value.toUpperCase());
+                  setFound(null);
                 }}
+                placeholder="Plate number (e.g. ABC1234)"
+                className="auth-input"
+                style={{ textTransform: "uppercase" }}
               />
-              <input
-                placeholder="Model (e.g. Corolla)"
-                value={form.model}
-                onChange={(e) => setForm({ ...form, model: e.target.value })}
-                style={{
-                  padding: 10,
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
-                }}
-              />
-              <input
-                placeholder="Year (e.g. 2018)"
-                value={form.year}
-                onChange={(e) => setForm({ ...form, year: e.target.value })}
-                style={{
-                  padding: 10,
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
-                }}
-              />
-            </div>
-
-            <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-              <button onClick={handleCreate} className="btn primary">
-                {loading ? "Saving..." : "Next"}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              borderRadius: 12,
-              padding: 18,
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>Vehicle found</h3>
-            <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-              <div>
-                <div style={{ fontWeight: 600 }}>
-                  {found.plateNumber || found.plate}
-                </div>
-                <div style={{ color: "#6b7280" }}>
-                  {(found.make || "-") + " " + (found.model || "")}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontWeight: 600 }}>{found.year || "-"}</div>
-                <div style={{ color: "#6b7280" }}>Year</div>
-              </div>
-              <div>
-                <div style={{ fontWeight: 600 }}>{found.status || "-"}</div>
-                <div style={{ color: "#6b7280" }}>Status</div>
-              </div>
-            </div>
-
-            <div style={{ marginTop: 16 }}>
               <button
-                onClick={() => handleNextExisting(found)}
-                className="btn primary"
+                onClick={checkVehicle}
+                className="auth-button"
+                style={{ minWidth: "120px" }}
+                disabled={loading}
               >
-                Next
+                {loading ? "Checking..." : "Check"}
               </button>
             </div>
           </div>
-        )}
+
+          {found === null ? null : found === false ? (
+            <div
+              className="auth-card"
+              style={{ padding: "1.5rem", marginTop: "1rem" }}
+            >
+              <h3 className="section-title">New Vehicle Registration</h3>
+              <div className="registration-form">
+                <div className="input-grid">
+                  <div className="form-group">
+                    <input
+                      placeholder="Make (e.g. Toyota)"
+                      value={form.make}
+                      onChange={(e) =>
+                        setForm({ ...form, make: e.target.value })
+                      }
+                      className="auth-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <input
+                      placeholder="Model (e.g. Corolla)"
+                      value={form.model}
+                      onChange={(e) =>
+                        setForm({ ...form, model: e.target.value })
+                      }
+                      className="auth-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <input
+                      placeholder="Year (e.g. 2018)"
+                      value={form.year}
+                      onChange={(e) =>
+                        setForm({ ...form, year: e.target.value })
+                      }
+                      className="auth-input"
+                      type="number"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleCreate}
+                  className="auth-button"
+                  disabled={loading}
+                  style={{ width: "100%", marginTop: "1rem" }}
+                >
+                  {loading ? "Saving..." : "Register Vehicle"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="auth-card"
+              style={{ padding: "1.5rem", marginTop: "1rem" }}
+            >
+              <h3 className="section-title">Vehicle Found</h3>
+              <div className="vehicle-details">
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <label>Plate Number</label>
+                    <span>{found.plateNumber || found.plate}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Make & Model</label>
+                    <span>
+                      {(found.make || "-") + " " + (found.model || "")}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Year</label>
+                    <span>{found.year || "-"}</span>
+                  </div>
+                  <div className="detail-item">
+                    <label>Status</label>
+                    <span className={`status-badge ${found.status}`}>
+                      {found.status || "-"}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleNextExisting(found)}
+                  className="auth-button"
+                  style={{ width: "100%", marginTop: "1rem" }}
+                >
+                  Continue to Booking
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

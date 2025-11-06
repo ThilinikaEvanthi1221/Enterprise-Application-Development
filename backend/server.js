@@ -5,7 +5,10 @@ const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const connectDB = require("./config/db");
 const Admin = require("./models/admin");
-const { runMigrations, isAutoMigrationEnabled } = require("./utils/runMigrations");
+const {
+  runMigrations,
+  isAutoMigrationEnabled,
+} = require("./utils/runMigrations");
 
 dotenv.config();
 
@@ -14,10 +17,10 @@ dotenv.config();
   try {
     // Connect to MongoDB
     await connectDB();
-    
+
     // Wait for connection to be ready (connectDB resolves when connected)
     // Small delay to ensure db object is available
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Run automatic migrations if enabled
     if (isAutoMigrationEnabled()) {
@@ -29,7 +32,9 @@ dotenv.config();
         console.log("⚠ Database object not available, skipping migrations");
       }
     } else {
-      console.log("Automatic migrations disabled (set AUTO_MIGRATE=false to disable)");
+      console.log(
+        "Automatic migrations disabled (set AUTO_MIGRATE=false to disable)"
+      );
     }
 
     // Bootstrap: ensure admins collection exists and optionally seed a default admin

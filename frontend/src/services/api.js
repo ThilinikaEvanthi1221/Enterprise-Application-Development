@@ -35,8 +35,8 @@ export const createVehicle = (payload) => {
   return API.post(`/vehicles`, payload);
 };
 
-export const getVehicleByNumber = (plateNumber) => {
-  return API.get(`/vehicles/lookup`, {
-    params: { plateNumber }, // sends as /vehicles/lookup?plateNumber=ABC123
+export const getVehicleByNumber = (vehicleNumber) => {
+  return API.get("/vehicles/lookup", {
+    params: { plateNumber: vehicleNumber },
   });
 };

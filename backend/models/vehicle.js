@@ -2,7 +2,13 @@ const mongoose = require("mongoose");
 
 const vehicleSchema = new mongoose.Schema(
   {
-    plateNumber: { type: String, required: true, unique: true },
+    plateNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      uppercase: true,
+    },
     make: { type: String, required: true },
     model: { type: String, required: true },
     year: { type: Number },
