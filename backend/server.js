@@ -12,6 +12,19 @@ const {
 
 dotenv.config();
 
+const app = express();
+
+// Configure CORS
+app.use(
+  cors({
+    origin: "http://localhost:3000", // React app's address
+    credentials: true,
+  })
+);
+
+// Body parser
+app.use(express.json());
+
 // Connect to database and run migrations on startup
 (async () => {
   try {
@@ -62,10 +75,6 @@ dotenv.config();
     // Don't exit - let server attempt to start anyway
   }
 })();
-
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));

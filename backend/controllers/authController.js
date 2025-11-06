@@ -19,7 +19,10 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
+    console.log('=== Login Attempt ===');
+    console.log('Headers:', req.headers);
     console.log('Login request body:', req.body);
+    
     const { email, password } = req.body;
     
     if (!email || !password) {
@@ -28,16 +31,45 @@ exports.login = async (req, res) => {
     }
     
     const user = await User.findOne({ email });
+    console.log('Database query result:', user);
     console.log('User found:', user ? user.email : 'Not found');
-    if (!user) return res.status(400).json({ msg: "Invalid credentials" });
+    
+    if (!user) {
+      console.log('User not found in database');
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
 
+    console.log('Comparing passwords...');
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch);
-    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+    console.log('Password match result:', isMatch);
+    
+    if (!isMatch) {
+      console.log('Password does not match');
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log('Creating JWT token...');
+    const token = jwt.sign(
+      { id: user._id, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "1h" }
+    );
+    
     console.log('Login successful for:', user.email);
-    res.json({ token, user: { id: user._id, name: user.name, role: user.role } });
+    console.log('User role:', user.role);
+    
+    const responseData = { 
+      token, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email,
+        role: user.role 
+      } 
+    };
+    console.log('Sending response:', responseData);
+    
+    res.json(responseData);
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ msg: error.message });
