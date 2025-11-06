@@ -174,5 +174,12 @@ try {
   console.error("✗ Inventory routes failed:", err.message);
 }
 
+try {
+  app.use("/api/profile", require("./routes/profileRoutes"));
+  console.log("✓ Profile routes loaded");
+} catch (err) {
+  console.error("✗ Profile routes failed:", err.message);
+}
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

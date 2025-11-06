@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
 import Customers from "./pages/Customers";
 import Staff from "./pages/Staff";
+import VehicleRegister from "./pages/VehicleRegister";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
@@ -23,6 +24,7 @@ import Services from "./pages/Services";
 import Vehicles from "./pages/Vehicles";
 import TimeLogs from "./pages/TimeLogs";
 import ChatBot from "./pages/ChatBot";
+import Profile from "./pages/Profile";
 
 // Service Request Components
 import CustomerServiceRequests from "./pages/CustomerServiceRequests";
@@ -69,6 +71,8 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        <Route path="/vehicle-register" element={<VehicleRegister />} />
 
         {/* Employee Routes */}
         <Route
@@ -165,7 +169,7 @@ function App() {
             </PrivateRoute>
           }
         />
-        
+
         {/* Additional routes from Employee-dashboard branch */}
         <Route
           path="/bookings"
@@ -191,6 +195,7 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );
