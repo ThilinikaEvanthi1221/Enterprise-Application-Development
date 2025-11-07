@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Calendar, Wrench, Car, Clock, MessageSquare, X } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, Wrench, Car, Clock, MessageSquare, X, User } from "lucide-react";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
@@ -12,6 +12,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: "Vehicles", icon: Car, path: "/vehicles" },
     { name: "Time Logs", icon: Clock, path: "/time-logs" },
     { name: "ChatBot Queries", icon: MessageSquare, path: "/chatbot" },
+    { name: "My Profile", icon: User, path: "/profile" },
   ];
 
   return (
