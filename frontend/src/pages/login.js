@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { login, googleLogin } from "../services/api";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff } from "lucide-react";
@@ -34,15 +34,24 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    console.log('Attempting login with:', form);
 
     try {
       const res = await login(form);
+      console.log('Login response:', res.data);
+      
       if (res.data && res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        console.log('Login successful, redirecting to:', res.data.user.role);
         redirectToDashboard(res.data.user.role);
+      } else {
+        console.error('Invalid response format:', res.data);
+        setError("Invalid response from server");
       }
     } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response);
       setError(error.response?.data?.msg || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
@@ -276,9 +285,9 @@ export default function Login() {
                   />
                   <span style={styles.checkboxText}>Remember me</span>
                 </label>
-                <a href="#" style={styles.forgotLink}>
+                <Link to="/forgot-password" style={styles.forgotLink}>
                   Forgot Password?
-                </a>
+                </Link>
               </div>
 
               <button

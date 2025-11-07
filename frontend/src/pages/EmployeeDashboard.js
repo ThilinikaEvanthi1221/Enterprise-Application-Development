@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { getDashboardStats } from "../services/api";
+import AppointmentStore from "../utils/AppointmentStore";
 import Bookings from "./Bookings";
 import Customers from "./Customers";
 import Staff from "./Staff";
@@ -24,6 +25,10 @@ export default function EmployeeDashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const location = useLocation();
   const navigate = useNavigate();
+  // Notifications (pulled from in-memory store for testing)
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -65,6 +70,30 @@ export default function EmployeeDashboard() {
 
     fetchDashboardData();
   }, [navigate]);
+
+  // Poll appointment store for notifications so employees see them in near-real-time
+  useEffect(() => {
+    const updateNotifications = () => {
+      try {
+        const notifs = AppointmentStore.getNotifications();
+        setNotifications(notifs.slice().reverse()); // show newest first
+        setUnreadCount(AppointmentStore.getUnreadCount());
+      } catch (e) {
+        console.error('Failed to load notifications from store', e);
+      }
+    };
+
+    updateNotifications();
+    const iv = setInterval(updateNotifications, 2000);
+    // Also listen for storage events so cross-tab updates appear immediately
+    const onStorage = (e) => {
+      if (e.key === '__notifications' || e.key === '__appointments') {
+        updateNotifications();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => { clearInterval(iv); window.removeEventListener('storage', onStorage); };
+  }, []);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -310,7 +339,15 @@ export default function EmployeeDashboard() {
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              <div className="notification-icon">
+              <div
+                className="notification-icon"
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate('/employee/notifications')}
+                onKeyDown={(e) => { if (e.key === 'Enter') navigate('/employee/notifications'); }}
+                style={{ cursor: 'pointer' }}
+                aria-label="Open notifications"
+              >
                 <svg
                   className="icon"
                   fill="none"
@@ -324,15 +361,89 @@ export default function EmployeeDashboard() {
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                   />
                 </svg>
-                <span className="notification-dot"></span>
+                {/* show unread count; simple dot when zero shows nothing */}
+                <span className="notification-dot">{unreadCount > 0 ? unreadCount : ''}</span>
               </div>
             </div>
-            <div className="user-profile">
-              <div className="avatar">{user?.name?.charAt(0) || "E"}</div>
-              <div className="user-info">
-                <span className="user-name">{user?.name || "Employee"}</span>
-                <span className="user-role">Employee</span>
-              </div>
+            <div className="user-profile" style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '5px'
+                }}
+              >
+                <div className="avatar">{user?.name?.charAt(0) || "E"}</div>
+                <div className="user-info">
+                  <span className="user-name">{user?.name || "Employee"}</span>
+                  <span className="user-role">Employee</span>
+                </div>
+              </button>
+              
+              {/* User Dropdown Menu */}
+              {showUserMenu && (
+                <>
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 40
+                    }}
+                    onClick={() => setShowUserMenu(false)}
+                  ></div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '100%',
+                      marginTop: '8px',
+                      width: '200px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      border: '1px solid #e5e7eb',
+                      padding: '8px 0',
+                      zIndex: 50
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        navigate('/profile');
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '10px 16px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: '#374151',
+                        textAlign: 'left',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.background = 'none'}
+                    >
+                      <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      My Profile
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
             <button onClick={handleLogout} className="logout-btn">
               Logout
@@ -349,7 +460,8 @@ export default function EmployeeDashboard() {
           <Route path="/time-log" element={<TimeLogForm />} />
           <Route path="/inventory" element={<InventoryDashboard />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/parts" element={<PartsManagement />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+           <Route path="/parts" element={<PartsManagement />} />
           <Route path="/stock-adjustment" element={<StockAdjustment />} />
         </Routes>
       </main>
@@ -550,4 +662,55 @@ function DashboardHome({ stats, formatDate, getStatusColor }) {
         </div>
       </>
     );
+}
+
+// Notifications Page for employees (reads from AppointmentStore)
+function NotificationsPage() {
+  const [list, setList] = React.useState([]);
+
+  const reload = () => {
+    const nots = AppointmentStore.getNotifications().slice().reverse();
+    setList(nots);
+  };
+
+  React.useEffect(() => {
+    reload();
+    const iv = setInterval(reload, 2000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const markRead = (id) => {
+    AppointmentStore.markNotificationAsRead(id);
+    reload();
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Notifications</h2>
+      {list.length === 0 ? (
+        <div>No notifications</div>
+      ) : (
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {list.map(n => (
+            <li key={n.id} style={{ borderBottom: '1px solid #eee', padding: '12px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>
+                  <strong>{n.title || n.type}</strong>
+                  <div style={{ color: '#666' }}>{n.message}</div>
+                  <div style={{ fontSize: 12, color: '#999' }}>{new Date(n.createdAt).toLocaleString()}</div>
+                </div>
+                <div style={{ marginLeft: 12 }}>
+                  {!n.read && (
+                    <button onClick={() => markRead(n.id)} style={{ background: '#2563eb', color: 'white', padding: '6px 8px', borderRadius: 4, border: 'none' }}>
+                      Mark read
+                    </button>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
