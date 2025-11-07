@@ -147,7 +147,8 @@ export default function Bookings() {
           assignedTo: { name: user?.name || "Current Employee" },
           serviceDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
           estimatedPrice: 120,
-          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000) // 3 hours ago
+          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+          isAppointment: true
         },
         {
           _id: "demo-booking-4",
