@@ -10,12 +10,12 @@ export default function CustomerDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [stats, setStats] = useState({
     active: 0,
     pending: 0,
     completed: 0,
-    total: 0
+    total: 0,
   });
 
   useEffect(() => {
@@ -27,37 +27,42 @@ export default function CustomerDashboard() {
 
   const fetchAppointments = () => {
     try {
-      console.log('Fetching appointments from store...');
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      
+      console.log("Fetching appointments from store...");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
       if (!user.id) {
-        setError('Please log in to view appointments');
+        setError("Please log in to view appointments");
         setLoading(false);
         return;
       }
 
       // Get all appointments from store
       const allAppointments = AppointmentStore.getAppointments();
-      
+
       // Filter appointments for current user
-      const userAppointments = allAppointments.filter(apt => apt.customerId === user.id);
-      
+      const userAppointments = allAppointments.filter(
+        (apt) => apt.customerId === user.id
+      );
+
       // Calculate stats from appointments array
-      const calculatedStats = userAppointments.reduce((acc, apt) => {
-        switch(apt.status) {
-          case 'in-progress':
-            acc.active++;
-            break;
-          case 'pending':
-            acc.pending++;
-            break;
-          case 'completed':
-            acc.completed++;
-            break;
-        }
-        acc.total++;
-        return acc;
-      }, { active: 0, pending: 0, completed: 0, total: 0 });
+      const calculatedStats = userAppointments.reduce(
+        (acc, apt) => {
+          switch (apt.status) {
+            case "in-progress":
+              acc.active++;
+              break;
+            case "pending":
+              acc.pending++;
+              break;
+            case "completed":
+              acc.completed++;
+              break;
+          }
+          acc.total++;
+          return acc;
+        },
+        { active: 0, pending: 0, completed: 0, total: 0 }
+      );
 
       setAppointments(userAppointments);
       setStats(calculatedStats);
@@ -377,7 +382,7 @@ export default function CustomerDashboard() {
               ))}
             </div>
             <button
-              onClick={() => navigate("/customer-service-requests")}
+              onClick={() => navigate("/customer/my-services")}
               style={{
                 marginTop: "16px",
                 padding: "10px 20px",

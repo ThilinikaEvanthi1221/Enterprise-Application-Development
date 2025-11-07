@@ -7,13 +7,14 @@ const emailService = require("../services/emailService");
 
 exports.listAppointments = async (req, res) => {
   try {
-    const query = req.path === "/my" ? { user: req.user.id } : {};
+    const query = req.path === "/my" ? { customer: req.user.id } : {};
     const items = await Appointment.find(query)
-      .populate("user", "name email")
+      .populate("customer", "name email")
       .populate("vehicle")
       .populate("service");
     return res.json(items);
   } catch (err) {
+    console.error("Error listing appointments:", err);
     return res.status(500).json({ msg: err.message });
   }
 };
@@ -21,12 +22,13 @@ exports.listAppointments = async (req, res) => {
 exports.getAppointment = async (req, res) => {
   try {
     const item = await Appointment.findById(req.params.id)
-      .populate("user", "name email")
+      .populate("customer", "name email")
       .populate("vehicle")
       .populate("service");
     if (!item) return res.status(404).json({ msg: "Appointment not found" });
     return res.json(item);
   } catch (err) {
+    console.error("Error getting appointment:", err);
     return res.status(500).json({ msg: err.message });
   }
 };
@@ -36,57 +38,21 @@ exports.createAppointment = async (req, res) => {
   try {
     const payload = {
       ...req.body,
-      user: req.user.id,
-    });
+      customer: req.user.id,
+    };
 
-    // Create notification for customer
-    await Notification.create({
-      user: req.user.id,
-      type: "appointment",
-      title: "Appointment Booked",
-      message: `Your appointment has been scheduled for ${new Date(
-        appointment.date
-      ).toLocaleString()}`,
-      relatedTo: appointment._id,
-      onModel: "Appointment",
-    });
-
-    // Create notification for admin
-    const admins = await User.find({ role: "admin" });
-    await Promise.all(
-      admins.map((admin) =>
-        Notification.create({
-          user: admin._id,
-          type: "appointment",
-          title: "New Appointment Request",
-          message: `New appointment request from ${
-            req.user.name
-          } for ${new Date(appointment.date).toLocaleString()}`,
-          relatedTo: appointment._id,
-          onModel: "Appointment",
-        })
-      )
-    );
-
-    // Send confirmation email (best effort)
-    try {
-      await emailService.sendAppointmentConfirmation(
-        req.user.email,
-        appointment
-      );
-    } catch (emailErr) {
-      console.error("Email sending failed:", emailErr);
-    }
+    // Create the appointment
+    const appointment = await Appointment.create(payload);
 
     // Populate the response
     const populatedAppointment = await Appointment.findById(appointment._id)
-      .populate("user", "name email")
+      .populate("customer", "name email")
       .populate("vehicle")
       .populate("service");
 
     return res.status(201).json(populatedAppointment);
   } catch (err) {
-    console.error('Error getting appointment:', err);
+    console.error("Error creating appointment:", err);
     return res.status(500).json({ msg: err.message });
   }
 };
@@ -100,7 +66,7 @@ exports.updateAppointment = async (req, res) => {
     if (!item) return res.status(404).json({ msg: "Appointment not found" });
     return res.json(item);
   } catch (err) {
-    console.error('Error updating appointment:', err);
+    console.error("Error updating appointment:", err);
     return res.status(500).json({ msg: err.message });
   }
 };
@@ -109,10 +75,10 @@ exports.updateAppointment = async (req, res) => {
 exports.deleteAppointment = async (req, res) => {
   try {
     const item = await Appointment.findByIdAndDelete(req.params.id);
-    if (!item) return res.status(404).json({ msg: 'Appointment not found' });
-    return res.json({ msg: 'Appointment deleted' });
+    if (!item) return res.status(404).json({ msg: "Appointment not found" });
+    return res.json({ msg: "Appointment deleted" });
   } catch (err) {
-    console.error('Error deleting appointment:', err);
+    console.error("Error deleting appointment:", err);
     return res.status(500).json({ msg: err.message });
   }
 };
@@ -135,12 +101,12 @@ exports.checkAvailableSlots = async (req, res) => {
 
     // Find all appointments for this date
     const appointments = await Appointment.find({
-      scheduledAt: {
+      date: {
         $gte: startOfDay,
         $lte: endOfDay,
       },
       status: { $nin: ["cancelled", "completed"] }, // Exclude cancelled/completed
-    }).select("scheduledAt");
+    }).select("date");
 
     // Define all available time slots
     const allSlots = [
@@ -157,7 +123,7 @@ exports.checkAvailableSlots = async (req, res) => {
 
     // Extract booked slots from appointments
     const bookedSlots = appointments.map((appointment) => {
-      const hour = appointment.scheduledAt.getHours();
+      const hour = appointment.date.getHours();
       const period = hour >= 12 ? "PM" : "AM";
       const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
       const startTime = `${displayHour
