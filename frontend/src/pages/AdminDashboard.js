@@ -149,6 +149,25 @@ const Dashboard = () => {
           >
             🔧 Manage Service Requests
           </button>
+          <button
+            onClick={() => navigate("/time-log-reports")}
+            style={{
+              padding: "12px 24px",
+              background: "#059669",
+              color: "white",
+              fontSize: "16px",
+              fontWeight: "600",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+            }}
+            onMouseEnter={(e) => (e.target.style.background = "#047857")}
+            onMouseLeave={(e) => (e.target.style.background = "#059669")}
+          >
+            📊 View Time Log Reports
+          </button>
         </div>
 
         {/* Metric Cards - Top Row */}

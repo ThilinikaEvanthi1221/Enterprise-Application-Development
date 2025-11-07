@@ -21,6 +21,7 @@ import Services from "./pages/Services";
 import Vehicles from "./pages/Vehicles";
 import TimeLogs from "./pages/TimeLogs";
 import ChatBot from "./pages/ChatBot";
+import TimeLogReport from "./pages/TimeLogReport";
 
 // Service Request Components
 import CustomerServiceRequests from "./pages/CustomerServiceRequests";
@@ -64,6 +65,14 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["admin"]}>
               <AddEmployee />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/time-log-reports"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <TimeLogReport />
             </PrivateRoute>
           }
         />

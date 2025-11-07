@@ -4,6 +4,7 @@ import { getDashboardStats } from "../services/api";
 import Bookings from "./Bookings";
 import Customers from "./Customers";
 import Staff from "./Staff";
+import TimeLogForm from "./TimeLogForm";
 import InventoryDashboard from "../inventory-management/pages/InventoryDashboard";
 import Reports from "../inventory-management/pages/Reports";
 import PartsManagement from "../inventory-management/pages/PartsManagement";
@@ -235,6 +236,22 @@ export default function EmployeeDashboard() {
             </svg>
             Reports
           </NavLink>
+          <NavLink to="/employee/time-log" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+            <svg
+              className="nav-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Time Logging
+          </NavLink>
           <NavLink to="/employee/ratings" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
@@ -265,6 +282,7 @@ export default function EmployeeDashboard() {
               if (path.startsWith("/employee/bookings")) title = "Bookings";
               else if (path.startsWith("/employee/customers")) title = "Customers";
               else if (path.startsWith("/employee/staff")) title = "Staff Management";
+              else if (path.startsWith("/employee/time-log")) title = "Time Logging";
               else if (path.startsWith("/employee/inventory")) title = "Inventory";
               else if (path.startsWith("/employee/reports")) title = "Reports";
               else if (path.startsWith("/employee/ratings")) title = "Service Ratings";
@@ -328,6 +346,7 @@ export default function EmployeeDashboard() {
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/staff" element={<Staff />} />
+          <Route path="/time-log" element={<TimeLogForm />} />
           <Route path="/inventory" element={<InventoryDashboard />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/parts" element={<PartsManagement />} />
