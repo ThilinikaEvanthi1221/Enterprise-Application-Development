@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const path = require("path");
 const connectDB = require("./config/db");
 const Admin = require("./models/admin");
+const timeLogSchema = require("./models/TimeLogSchema");
 const {
   runMigrations,
   isAutoMigrationEnabled,

@@ -107,10 +107,11 @@ exports.updateMyAssignment = async (req, res) => {
         .json({ msg: "You can only update appointments assigned to you" });
     }
 
-    // Only allow updating status and notes
+    // Only allow updating status, notes, and progress
     const allowedUpdates = {
       status: req.body.status,
       notes: req.body.notes,
+      progress: req.body.progress,
     };
 
     const updatedAppointment = await Appointment.findByIdAndUpdate(

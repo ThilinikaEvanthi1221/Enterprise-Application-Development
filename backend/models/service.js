@@ -83,4 +83,4 @@ serviceSchema.index({ customer: 1, status: 1 });
 serviceSchema.index({ assignedTo: 1, status: 1 });
 serviceSchema.index({ vehicle: 1 });
 
-module.exports = mongoose.model("Service", serviceSchema);
+module.exports = mongoose.models.Service || mongoose.model("Service", serviceSchema);

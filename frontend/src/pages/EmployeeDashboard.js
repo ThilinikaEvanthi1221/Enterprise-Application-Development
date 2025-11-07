@@ -5,6 +5,7 @@ import AppointmentStore from "../utils/AppointmentStore";
 import Bookings from "./Bookings";
 import Customers from "./Customers";
 import Staff from "./Staff";
+import TimeLogForm from "./TimeLogForm";
 import InventoryDashboard from "../inventory-management/pages/InventoryDashboard";
 import Reports from "../inventory-management/pages/Reports";
 import PartsManagement from "../inventory-management/pages/PartsManagement";
@@ -27,6 +28,7 @@ export default function EmployeeDashboard() {
   // Notifications (pulled from in-memory store for testing)
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -263,6 +265,22 @@ export default function EmployeeDashboard() {
             </svg>
             Reports
           </NavLink>
+          <NavLink to="/employee/time-log" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+            <svg
+              className="nav-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Time Logging
+          </NavLink>
           <NavLink to="/employee/ratings" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
             <svg
               className="nav-icon"
@@ -293,6 +311,7 @@ export default function EmployeeDashboard() {
               if (path.startsWith("/employee/bookings")) title = "Bookings";
               else if (path.startsWith("/employee/customers")) title = "Customers";
               else if (path.startsWith("/employee/staff")) title = "Staff Management";
+              else if (path.startsWith("/employee/time-log")) title = "Time Logging";
               else if (path.startsWith("/employee/inventory")) title = "Inventory";
               else if (path.startsWith("/employee/reports")) title = "Reports";
               else if (path.startsWith("/employee/ratings")) title = "Service Ratings";
@@ -346,12 +365,85 @@ export default function EmployeeDashboard() {
                 <span className="notification-dot">{unreadCount > 0 ? unreadCount : ''}</span>
               </div>
             </div>
-            <div className="user-profile">
-              <div className="avatar">{user?.name?.charAt(0) || "E"}</div>
-              <div className="user-info">
-                <span className="user-name">{user?.name || "Employee"}</span>
-                <span className="user-role">Employee</span>
-              </div>
+            <div className="user-profile" style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '5px'
+                }}
+              >
+                <div className="avatar">{user?.name?.charAt(0) || "E"}</div>
+                <div className="user-info">
+                  <span className="user-name">{user?.name || "Employee"}</span>
+                  <span className="user-role">Employee</span>
+                </div>
+              </button>
+              
+              {/* User Dropdown Menu */}
+              {showUserMenu && (
+                <>
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 40
+                    }}
+                    onClick={() => setShowUserMenu(false)}
+                  ></div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '100%',
+                      marginTop: '8px',
+                      width: '200px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      border: '1px solid #e5e7eb',
+                      padding: '8px 0',
+                      zIndex: 50
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        navigate('/profile');
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '10px 16px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: '#374151',
+                        textAlign: 'left',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.background = 'none'}
+                    >
+                      <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      My Profile
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
             <button onClick={handleLogout} className="logout-btn">
               Logout
@@ -365,6 +457,7 @@ export default function EmployeeDashboard() {
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/staff" element={<Staff />} />
+          <Route path="/time-log" element={<TimeLogForm />} />
           <Route path="/inventory" element={<InventoryDashboard />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/notifications" element={<NotificationsPage />} />

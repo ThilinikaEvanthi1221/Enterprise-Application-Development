@@ -159,7 +159,12 @@ const EmployeeServiceManagement = () => {
       const token = localStorage.getItem("token");
 
       // Check if it's an appointment or service
-      const isAppointment = selectedService.date && selectedService.service;
+      // Appointments have 'customer' field (or came from /my-assignments endpoint)
+      // Services have 'user' field (legacy)
+      const isAppointment =
+        selectedService.customer ||
+        (selectedService.date && !selectedService.user) ||
+        activeTab === "assigned"; // Items in assigned tab are appointments
 
       console.log(
         "Updating progress for:",
@@ -170,7 +175,7 @@ const EmployeeServiceManagement = () => {
 
       let response;
       if (isAppointment) {
-        // Update appointment status using employee endpoint
+        // Update appointment status and progress using employee endpoint
         response = await fetch(
           `http://localhost:5000/api/appointments/my-assignments/${selectedService._id}`,
           {
@@ -182,12 +187,18 @@ const EmployeeServiceManagement = () => {
             body: JSON.stringify({
               status: progressData.status,
               notes: progressData.notes,
+              progress: progressData.progress,
             }),
           }
         );
       } else {
         // Update service progress
         console.log("Sending service update with data:", progressData);
+        console.log("Service ID:", selectedService._id);
+        console.log(
+          "Full URL:",
+          `http://localhost:5000/api/services/${selectedService._id}/progress`
+        );
         response = await fetch(
           `http://localhost:5000/api/services/${selectedService._id}/progress`,
           {
@@ -201,8 +212,10 @@ const EmployeeServiceManagement = () => {
         );
       }
 
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
       const responseData = await response.json();
-      console.log("Response:", responseData);
+      console.log("Response data:", responseData);
 
       if (response.ok) {
         alert("Progress updated successfully!");
@@ -220,8 +233,22 @@ const EmployeeServiceManagement = () => {
   };
 
   const openProgressModal = (service) => {
+    console.log("Opening progress modal for service:", service);
+    const isAppointment =
+      service.customer ||
+      (service.date && !service.user) ||
+      activeTab === "assigned";
+    console.log("Is appointment?", isAppointment);
+    console.log("Has customer field?", !!service.customer);
+    console.log("Has user field?", !!service.user);
+    console.log("Active tab:", activeTab);
     setSelectedService(service);
     setProgressData({
+      status: service.status,
+      progress: service.progress || 0,
+      notes: service.notes || "",
+    });
+    console.log("Initial progress data:", {
       status: service.status,
       progress: service.progress || 0,
       notes: service.notes || "",
@@ -252,7 +279,11 @@ const EmployeeServiceManagement = () => {
 
   const ServiceCard = ({ service, isAvailable = false }) => {
     // Check if it's an appointment or service
-    const isAppointment = service.date && service.service;
+    // Appointments have 'customer' field, services have 'user' field
+    const isAppointment =
+      service.customer ||
+      (service.date && !service.user) ||
+      activeTab === "assigned";
     const displayName = isAppointment
       ? service.service?.name || "Appointment"
       : service.name;
@@ -776,7 +807,9 @@ const EmployeeServiceManagement = () => {
                 <div className="p-6 border-b border-gray-200">
                   <h2 className="text-2xl font-bold text-gray-900">
                     Update{" "}
-                    {selectedService.date && selectedService.service
+                    {selectedService.customer ||
+                    (selectedService.date && !selectedService.user) ||
+                    activeTab === "assigned"
                       ? "Appointment"
                       : "Service"}{" "}
                     Progress
@@ -784,11 +817,6 @@ const EmployeeServiceManagement = () => {
                   <p className="text-gray-600 mt-1">
                     {selectedService.service?.name || selectedService.name}
                   </p>
-                  {selectedService.date && selectedService.service && (
-                    <p className="text-sm text-blue-600 mt-1">
-                      Note: Appointments only track status changes
-                    </p>
-                  )}
                 </div>
 
                 <form onSubmit={handleUpdateProgress} className="p-6 space-y-4">
@@ -826,34 +854,41 @@ const EmployeeServiceManagement = () => {
                       )}
                     </select>
                   </div>
-
-                  {!(selectedService.date && selectedService.service) && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Progress: {progressData.progress}%
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={progressData.progress || 0}
-                        onChange={(e) =>
-                          setProgressData({
-                            ...progressData,
-                            progress: parseInt(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>0%</span>
-                        <span>25%</span>
-                        <span>50%</span>
-                        <span>75%</span>
-                        <span>100%</span>
-                      </div>
+                  {/* Progress slider - show for both appointments and services */}
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-300">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Progress:{" "}
+                      <span className="text-lg font-bold text-blue-600">
+                        {progressData.progress || 0}%
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={progressData.progress || 0}
+                      onChange={(e) => {
+                        const newProgress = parseInt(e.target.value);
+                        console.log("Progress changed to:", newProgress);
+                        setProgressData({
+                          ...progressData,
+                          progress: newProgress,
+                        });
+                      }}
+                      className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        accentColor: "#3b82f6",
+                      }}
+                    />
+                    <div className="flex justify-between text-xs text-gray-600 mt-2 font-medium">
+                      <span>0%</span>
+                      <span>25%</span>
+                      <span>50%</span>
+                      <span>75%</span>
+                      <span>100%</span>
                     </div>
-                  )}
+                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -872,7 +907,6 @@ const EmployeeServiceManagement = () => {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <h4 className="font-semibold text-gray-900 mb-2">
                       Service Details:
@@ -905,7 +939,6 @@ const EmployeeServiceManagement = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex gap-3 pt-4">
                     <button
                       type="submit"
