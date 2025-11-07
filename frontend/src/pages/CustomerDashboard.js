@@ -209,7 +209,7 @@ export default function CustomerDashboard() {
     { name: "🔧 My Services", path: "/customer/my-services", icon: "🔧" },
     { name: "🚗 My Vehicles", path: "/customer/vehicles", icon: "🚗" },
     { name: "📋 Service History", path: "/customer/history", icon: "📋" },
-    { name: "👤 My Profile", path: "/customer/profile", icon: "👤" },
+    { name: "👤 My Profile", path: "/profile", icon: "👤" },
   ];
 
   return (
