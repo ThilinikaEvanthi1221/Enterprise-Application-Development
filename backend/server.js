@@ -186,5 +186,12 @@ try {
   console.error("✗ Profile routes failed:", err.message);
 }
 
+try {
+  app.use("/api/ratings", require("./routes/ratingsRoutes"));
+  console.log("✓ Ratings routes loaded");
+} catch (err) {
+  console.error("✗ Ratings routes failed:", err.message);
+}
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
