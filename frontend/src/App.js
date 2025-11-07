@@ -4,10 +4,13 @@ import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
 import Customers from "./pages/Customers";
 import Staff from "./pages/Staff";
+import VehicleRegister from "./pages/VehicleRegister";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
@@ -21,9 +24,11 @@ import Services from "./pages/Services";
 import Vehicles from "./pages/Vehicles";
 import TimeLogs from "./pages/TimeLogs";
 import ChatBot from "./pages/ChatBot";
+import Profile from "./pages/Profile";
 
 // Service Request Components
 import CustomerServiceRequests from "./pages/CustomerServiceRequests";
+import MyServices from "./pages/MyServices";
 import EmployeeServiceManagement from "./pages/EmployeeServiceManagement";
 import AdminServiceManagement from "./pages/AdminServiceManagement";
 
@@ -35,6 +40,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route path="/unauthorized" element={<Unauthorized />} />
 
@@ -66,6 +73,8 @@ function App() {
           }
         />
 
+        <Route path="/vehicle-register" element={<VehicleRegister />} />
+
         {/* Employee Routes */}
         <Route
           path="/employee/*"
@@ -92,6 +101,14 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["customer"]}>
               <CustomerServiceRequests />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/customer/my-services"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <MyServices />
             </PrivateRoute>
           }
         />
@@ -161,7 +178,7 @@ function App() {
             </PrivateRoute>
           }
         />
-        
+
         {/* Additional routes from Employee-dashboard branch */}
         <Route
           path="/bookings"
@@ -187,6 +204,7 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );

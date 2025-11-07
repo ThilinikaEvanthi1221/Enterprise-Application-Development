@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { login, googleLogin } from "../services/api";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff } from "lucide-react";
@@ -285,9 +285,9 @@ export default function Login() {
                   />
                   <span style={styles.checkboxText}>Remember me</span>
                 </label>
-                <a href="#" style={styles.forgotLink}>
+                <Link to="/forgot-password" style={styles.forgotLink}>
                   Forgot Password?
-                </a>
+                </Link>
               </div>
 
               <button
