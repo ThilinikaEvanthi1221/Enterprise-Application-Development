@@ -74,7 +74,9 @@ const CustomerServiceRequests = () => {
     try {
       const response = await getMyVehicles();
       console.log("My vehicles from API:", response.data);
-      setVehicles(Array.isArray(response.data) ? response.data : []);
+      setVehicles(
+        Array.isArray(response.data.vehicles) ? response.data.vehicles : []
+      );
     } catch (error) {
       console.error("Error fetching vehicles:", error);
       setVehicles([]);
