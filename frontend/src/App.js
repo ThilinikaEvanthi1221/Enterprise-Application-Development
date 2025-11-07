@@ -4,7 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
-} from "react-router-dom"; // ✅ Added Navigate import
+} from "react-router-dom";
 
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -119,17 +119,9 @@ function App() {
           }
         />
 
-        {/* 🧾 Customer Service Requests / Booking Page (use existing component for both paths) */}
+        {/* 🧾 Customer Service Requests / Booking Page */}
         <Route
           path="/customer/service-requests"
-          element={
-            <PrivateRoute allowedRoles={["customer"]}>
-              <CustomerServiceRequests />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/customer/service-request"
           element={
             <PrivateRoute allowedRoles={["customer"]}>
               <CustomerServiceRequests />

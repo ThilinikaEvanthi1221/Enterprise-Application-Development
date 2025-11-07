@@ -8,60 +8,34 @@ import RecentActivity from "../components/layout/RecentActivity";
 
 export default function CustomerDashboard() {
   const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(
-          "http://localhost:5000/api/services/my-services",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        const response = await fetch("http://localhost:5000/api/services/my-services", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await response.json();
         setServices(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching services:", err);
-        setError("Failed to fetch service requests");
+        setError("Failed to fetch service data");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchServices();
   }, []);
 
-  // Calculate stats based on service status
   const stats = [
-    {
-      label: "Active Appointments",
-      value: services.filter(
-        (s) => s.status === "approved" || s.status === "ongoing"
-      ).length,
-      subtext: "Confirmed",
-    },
-    {
-      label: "Pending Approval",
-      value: services.filter(
-        (s) => s.status === "requested" || s.status === "pending"
-      ).length,
-      subtext: "Awaiting",
-    },
-    {
-      label: "In Progress",
-      value: services.filter((s) => s.status === "ongoing").length,
-      subtext: "Active now",
-    },
-    {
-      label: "Completed Services",
-      value: services.filter((s) => s.status === "completed").length,
-      subtext: "All time",
-    },
+    { label: "Active Appointments", value: services.filter(a => a.status === "approved" || a.status === "ongoing").length, subtext: "Confirmed" },
+    { label: "Pending Approval", value: services.filter(a => a.status === "requested" || a.status === "pending").length, subtext: "Awaiting" },
+    { label: "In Progress", value: services.filter(a => a.status === "ongoing").length, subtext: "Active now" },
+    { label: "Completed Services", value: services.filter(a => a.status === "completed").length, subtext: "All time" },
   ];
 
   return (
@@ -70,21 +44,14 @@ export default function CustomerDashboard() {
       <div className="flex-1 flex flex-col">
         <CustomerNavbar />
         <main className="p-6 overflow-y-auto">
-          {/* Dashboard Stats Section */}
-          <DashboardStats stats={stats} />
-
-          {/* Quick Actions */}
-          <QuickActions />
-
-          {/* Error Message (if any) */}
           {error && (
-            <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg mt-4">
+            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
               {error}
             </div>
           )}
-
-          {/* Upcoming and Recent Activity */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <DashboardStats stats={stats} />
+          <QuickActions />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <UpcomingAppointments />
             <RecentActivity />
           </div>

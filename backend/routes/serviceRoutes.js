@@ -7,6 +7,8 @@ const {
   requireCustomerOrEmployee,
 } = require("../middleware/authMiddleware");
 const {
+  // Public functions
+  listAvailableServices,
   // Customer functions
   requestService,
   getMyServices,
@@ -29,6 +31,9 @@ const {
 } = require("../controllers/servicesController");
 
 const router = express.Router();
+
+// PUBLIC ROUTES - Available to all users
+router.get('/available-services', listAvailableServices);
 
 // CUSTOMER ROUTES - Customers can request and view their own services
 router.post("/request", verifyToken, requireCustomer, requestService);
@@ -67,5 +72,8 @@ router.patch("/:id/cancel", verifyToken, requireCustomer, cancelMyService);
 
 // Admin get single service - MUST be last since it matches any /:id
 router.get("/:id", verifyToken, requireAdmin, getService);
+
+// Public route to list available services
+router.get("/available", listAvailableServices);
 
 module.exports = router;
