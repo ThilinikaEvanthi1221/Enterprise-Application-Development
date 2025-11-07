@@ -138,7 +138,7 @@ const CustomerServiceRequests = () => {
       const data = await response.json();
 
       if (response.ok) {
-        const appointmentDate = new Date(data.appointment.scheduledAt);
+        const appointmentDate = new Date(data.appointment.date);
         const message = `✓ Service request submitted successfully!\n\nYour appointment is confirmed for:\n${appointmentDate.toLocaleDateString(
           "en-US",
           {

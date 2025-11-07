@@ -116,17 +116,20 @@ exports.requestService = async (req, res) => {
 
     // Create appointment (now mandatory)
     const appointment = await Appointment.create({
-      user: customerId,
+      customer: customerId,
       vehicle: vehicleId,
       service: service._id,
-      scheduledAt: appointmentDateTime,
-      status: "scheduled",
+      date: appointmentDateTime,
+      status: "pending",
       notes: appointmentNotes || `${name} - ${timeSlot}`,
+      estimatedDuration: laborHours * 60, // Convert hours to minutes
+      price: costEstimate.estimatedTotal,
     });
 
     await appointment.populate([
-      { path: "user", select: "name email" },
+      { path: "customer", select: "name email" },
       { path: "vehicle", select: "make model year plateNumber" },
+      { path: "service", select: "name serviceType" },
     ]);
 
     // Populate vehicle and customer info

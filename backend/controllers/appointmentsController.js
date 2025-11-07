@@ -11,10 +11,26 @@ exports.listAppointments = async (req, res) => {
     const items = await Appointment.find(query)
       .populate("customer", "name email")
       .populate("vehicle")
-      .populate("service");
+      .populate("service")
+      .populate("assignedTo", "name email role");
     return res.json(items);
   } catch (err) {
     console.error("Error listing appointments:", err);
+    return res.status(500).json({ msg: err.message });
+  }
+};
+
+exports.listMyAssignments = async (req, res) => {
+  try {
+    const items = await Appointment.find({ assignedTo: req.user.id })
+      .populate("customer", "name email")
+      .populate("vehicle")
+      .populate("service")
+      .populate("assignedTo", "name email role")
+      .sort({ date: 1 }); // Sort by date ascending
+    return res.json(items);
+  } catch (err) {
+    console.error("Error listing assigned appointments:", err);
     return res.status(500).json({ msg: err.message });
   }
 };
@@ -24,7 +40,8 @@ exports.getAppointment = async (req, res) => {
     const item = await Appointment.findById(req.params.id)
       .populate("customer", "name email")
       .populate("vehicle")
-      .populate("service");
+      .populate("service")
+      .populate("assignedTo", "name email role");
     if (!item) return res.status(404).json({ msg: "Appointment not found" });
     return res.json(item);
   } catch (err) {
@@ -67,6 +84,48 @@ exports.updateAppointment = async (req, res) => {
     return res.json(item);
   } catch (err) {
     console.error("Error updating appointment:", err);
+    return res.status(500).json({ msg: err.message });
+  }
+};
+
+// Update assigned appointment (for employees)
+exports.updateMyAssignment = async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({ msg: "Appointment not found" });
+    }
+
+    // Check if the appointment is assigned to this employee
+    if (
+      !appointment.assignedTo ||
+      appointment.assignedTo.toString() !== req.user.id
+    ) {
+      return res
+        .status(403)
+        .json({ msg: "You can only update appointments assigned to you" });
+    }
+
+    // Only allow updating status and notes
+    const allowedUpdates = {
+      status: req.body.status,
+      notes: req.body.notes,
+    };
+
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      allowedUpdates,
+      { new: true }
+    )
+      .populate("customer", "name email")
+      .populate("vehicle")
+      .populate("service")
+      .populate("assignedTo", "name email role");
+
+    return res.json(updatedAppointment);
+  } catch (err) {
+    console.error("Error updating assigned appointment:", err);
     return res.status(500).json({ msg: err.message });
   }
 };

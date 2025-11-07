@@ -62,37 +62,60 @@ const EmployeeServiceManagement = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const endpoint =
-        activeTab === "assigned"
-          ? "/api/services/assigned"
-          : "/api/services/available";
-
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Error ${response.status}:`, errorData);
-
-        if (response.status === 403) {
-          alert(
-            `Access forbidden: ${
-              errorData.msg ||
-              "You do not have permission to access this resource"
-            }`
-          );
-          navigate("/");
-          return;
-        }
-        throw new Error(errorData.msg || `HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
 
       if (activeTab === "assigned") {
+        // Fetch appointments assigned to this employee
+        const response = await fetch(
+          "http://localhost:5000/api/appointments/my-assignments",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`Error ${response.status}:`, errorData);
+
+          if (response.status === 403) {
+            alert(
+              `Access forbidden: ${
+                errorData.msg ||
+                "You do not have permission to access this resource"
+              }`
+            );
+            navigate("/");
+            return;
+          }
+          throw new Error(errorData.msg || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
         setAssignedServices(Array.isArray(data) ? data : []);
       } else {
+        // Fetch available services
+        const endpoint = "/api/services/available";
+        const response = await fetch(`http://localhost:5000${endpoint}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`Error ${response.status}:`, errorData);
+
+          if (response.status === 403) {
+            alert(
+              `Access forbidden: ${
+                errorData.msg ||
+                "You do not have permission to access this resource"
+              }`
+            );
+            navigate("/");
+            return;
+          }
+          throw new Error(errorData.msg || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
         setAvailableServices(Array.isArray(data) ? data : []);
       }
     } catch (error) {
@@ -134,17 +157,52 @@ const EmployeeServiceManagement = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:5000/api/services/${selectedService._id}/progress`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(progressData),
-        }
+
+      // Check if it's an appointment or service
+      const isAppointment = selectedService.date && selectedService.service;
+
+      console.log(
+        "Updating progress for:",
+        isAppointment ? "Appointment" : "Service"
       );
+      console.log("Progress data:", progressData);
+      console.log("Selected service:", selectedService);
+
+      let response;
+      if (isAppointment) {
+        // Update appointment status using employee endpoint
+        response = await fetch(
+          `http://localhost:5000/api/appointments/my-assignments/${selectedService._id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              status: progressData.status,
+              notes: progressData.notes,
+            }),
+          }
+        );
+      } else {
+        // Update service progress
+        console.log("Sending service update with data:", progressData);
+        response = await fetch(
+          `http://localhost:5000/api/services/${selectedService._id}/progress`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(progressData),
+          }
+        );
+      }
+
+      const responseData = await response.json();
+      console.log("Response:", responseData);
 
       if (response.ok) {
         alert("Progress updated successfully!");
@@ -153,8 +211,7 @@ const EmployeeServiceManagement = () => {
         setProgressData({ status: "", progress: 0, notes: "" });
         fetchServices();
       } else {
-        const data = await response.json();
-        alert(data.msg || "Failed to update progress");
+        alert(responseData.msg || "Failed to update progress");
       }
     } catch (error) {
       console.error("Error updating progress:", error);
@@ -193,114 +250,150 @@ const EmployeeServiceManagement = () => {
     });
   };
 
-  const ServiceCard = ({ service, isAvailable = false }) => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-xl font-semibold text-gray-900">
-              {service.name}
-            </h3>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                service.status
-              )}`}
-            >
-              {service.status?.toUpperCase()}
-            </span>
-          </div>
-          <p className="text-sm text-gray-600 mb-3">{service.serviceType}</p>
+  const ServiceCard = ({ service, isAvailable = false }) => {
+    // Check if it's an appointment or service
+    const isAppointment = service.date && service.service;
+    const displayName = isAppointment
+      ? service.service?.name || "Appointment"
+      : service.name;
+    const serviceType = isAppointment
+      ? service.service?.serviceType || "Service"
+      : service.serviceType;
+    const estimatedCost = isAppointment ? service.price : service.estimatedCost;
+    const appointmentDate = isAppointment
+      ? service.date
+      : service.requestedDate;
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-gray-500">Customer:</span>
-              <p className="font-medium text-gray-900">
-                {service.customer?.name || "N/A"}
-              </p>
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-xl font-semibold text-gray-900">
+                {displayName}
+              </h3>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                  service.status
+                )}`}
+              >
+                {service.status?.toUpperCase()}
+              </span>
             </div>
-            <div>
-              <span className="text-gray-500">Vehicle:</span>
-              <p className="font-medium text-gray-900">
-                {service.vehicle?.make} {service.vehicle?.model}
-              </p>
-              <p className="text-xs text-gray-500">
-                {service.vehicle?.plateNumber}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-500">Est. Cost:</span>
-              <p className="font-semibold text-green-600">
-                ${service.estimatedCost?.toFixed(2) || "0.00"}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-500">Progress:</span>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all"
-                    style={{ width: `${service.progress || 0}%` }}
-                  ></div>
-                </div>
-                <span className="text-xs font-medium">
-                  {service.progress || 0}%
-                </span>
+            <p className="text-sm text-gray-600 mb-3">{serviceType}</p>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">Customer:</span>
+                <p className="font-medium text-gray-900">
+                  {service.customer?.name || "N/A"}
+                </p>
               </div>
+              <div>
+                <span className="text-gray-500">Vehicle:</span>
+                <p className="font-medium text-gray-900">
+                  {service.vehicle?.make} {service.vehicle?.model}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {service.vehicle?.plateNumber}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-500">Est. Cost:</span>
+                <p className="font-semibold text-green-600">
+                  ${estimatedCost?.toFixed(2) || "0.00"}
+                </p>
+              </div>
+              {!isAppointment && (
+                <div>
+                  <span className="text-gray-500">Progress:</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        style={{ width: `${service.progress || 0}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-medium">
+                      {service.progress || 0}%
+                    </span>
+                  </div>
+                </div>
+              )}
+              {isAppointment && (
+                <div>
+                  <span className="text-gray-500">Scheduled:</span>
+                  <p className="font-medium text-gray-900">
+                    {new Date(appointmentDate).toLocaleString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-3 flex gap-4 text-sm text-gray-600">
+              {isAppointment ? (
+                <span>Appointment: {formatDate(appointmentDate)}</span>
+              ) : (
+                <>
+                  <span>Requested: {formatDate(service.requestedDate)}</span>
+                  {service.startDate && (
+                    <span>Started: {formatDate(service.startDate)}</span>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
-          <div className="mt-3 flex gap-4 text-sm text-gray-600">
-            <span>Requested: {formatDate(service.requestedDate)}</span>
-            {service.startDate && (
-              <span>Started: {formatDate(service.startDate)}</span>
+          <div className="flex gap-2 ml-4">
+            {isAvailable ? (
+              <button
+                onClick={() => handleClaimService(service._id)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
+              >
+                Claim Service
+              </button>
+            ) : (
+              <button
+                onClick={() => openProgressModal(service)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
+              >
+                Update Progress
+              </button>
             )}
           </div>
         </div>
 
-        <div className="flex gap-2 ml-4">
-          {isAvailable ? (
-            <button
-              onClick={() => handleClaimService(service._id)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
-            >
-              Claim Service
-            </button>
-          ) : (
-            <button
-              onClick={() => openProgressModal(service)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
-            >
-              Update Progress
-            </button>
-          )}
-        </div>
+        {service.notes && (
+          <div className="mt-4 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+            <p className="text-sm text-gray-700">
+              <strong>Notes:</strong> {service.notes}
+            </p>
+          </div>
+        )}
+
+        {!isAppointment && service.description && (
+          <div className="mt-4 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+            <p className="text-sm text-gray-700">
+              <strong>Description:</strong> {service.description}
+            </p>
+          </div>
+        )}
+
+        {!isAppointment && service.customerNotes && (
+          <div className="mt-2 p-3 bg-yellow-50 rounded border-l-4 border-yellow-500">
+            <p className="text-sm text-gray-700">
+              <strong>Customer Notes:</strong> {service.customerNotes}
+            </p>
+          </div>
+        )}
       </div>
-
-      {service.description && (
-        <div className="mt-4 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
-          <p className="text-sm text-gray-700">
-            <strong>Description:</strong> {service.description}
-          </p>
-        </div>
-      )}
-
-      {service.customerNotes && (
-        <div className="mt-2 p-3 bg-yellow-50 rounded border-l-4 border-yellow-500">
-          <p className="text-sm text-gray-700">
-            <strong>Customer Notes:</strong> {service.customerNotes}
-          </p>
-        </div>
-      )}
-
-      {service.notes && (
-        <div className="mt-2 p-3 bg-blue-50 rounded border-l-4 border-blue-500">
-          <p className="text-sm text-gray-700">
-            <strong>Work Notes:</strong> {service.notes}
-          </p>
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -682,9 +775,20 @@ const EmployeeServiceManagement = () => {
               <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
                 <div className="p-6 border-b border-gray-200">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    Update Service Progress
+                    Update{" "}
+                    {selectedService.date && selectedService.service
+                      ? "Appointment"
+                      : "Service"}{" "}
+                    Progress
                   </h2>
-                  <p className="text-gray-600 mt-1">{selectedService.name}</p>
+                  <p className="text-gray-600 mt-1">
+                    {selectedService.service?.name || selectedService.name}
+                  </p>
+                  {selectedService.date && selectedService.service && (
+                    <p className="text-sm text-blue-600 mt-1">
+                      Note: Appointments only track status changes
+                    </p>
+                  )}
                 </div>
 
                 <form onSubmit={handleUpdateProgress} className="p-6 space-y-4">
@@ -701,40 +805,55 @@ const EmployeeServiceManagement = () => {
                         })
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
                     >
-                      <option value="">
-                        Keep Current Status ({selectedService.status})
-                      </option>
-                      <option value="ongoing">Ongoing</option>
-                      <option value="completed">Completed</option>
+                      <option value="">Select Status</option>
+                      {selectedService.date && selectedService.service ? (
+                        // Appointment status options
+                        <>
+                          <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </>
+                      ) : (
+                        // Service status options
+                        <>
+                          <option value="ongoing">Ongoing</option>
+                          <option value="completed">Completed</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Progress: {progressData.progress}%
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={progressData.progress}
-                      onChange={(e) =>
-                        setProgressData({
-                          ...progressData,
-                          progress: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>0%</span>
-                      <span>25%</span>
-                      <span>50%</span>
-                      <span>75%</span>
-                      <span>100%</span>
+                  {!(selectedService.date && selectedService.service) && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Progress: {progressData.progress}%
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={progressData.progress || 0}
+                        onChange={(e) =>
+                          setProgressData({
+                            ...progressData,
+                            progress: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>0%</span>
+                        <span>25%</span>
+                        <span>50%</span>
+                        <span>75%</span>
+                        <span>100%</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
