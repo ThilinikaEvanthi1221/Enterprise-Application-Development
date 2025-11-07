@@ -1,6 +1,15 @@
-# Enterprise Application Development - Inventory Management System
+# Enterprise Application Development - AutoServicePro System
 
-A comprehensive inventory and spare parts management system built with Node.js, Express, React, and MongoDB.
+A comprehensive automotive service and inventory management system with customer feedback integration, built with Node.js, Express, React, and MongoDB.
+
+## Project Overview
+
+This is a full-stack MERN application that combines:
+
+- **Core Service Management**: Complete automotive service management system
+- **Inventory Management**: Comprehensive spare parts and inventory tracking
+- **Customer Feedback System**: Service ratings and feedback collection
+- **User Management**: Role-based access control for different user types
 
 ## Project Structure
 
@@ -13,18 +22,20 @@ Enterprise-Application-Development/
 │   ├── models/                       # Database models
 │   ├── routes/                       # API routes
 │   ├── inventory-management/         # Inventory module
-│   │   ├── controllers/              # Inventory controllers
-│   │   ├── middleware/               # Role-based auth middleware
-│   │   ├── models/                   # Inventory models
-│   │   ├── routes/                   # Inventory routes
-│   │   ├── services/                 # Business logic
-│   │   └── config/                   # Inventory configuration
+│   ├── src/                          # Customer feedback source
+│   │   ├── models/                   # Rating model
+│   │   ├── routes/                   # Rating routes
+│   │   ├── middleware/               # Auth middleware
+│   │   └── index.js                  # Customer feedback server
 │   ├── scripts/                      # Database initialization scripts
 │   └── server.js                     # Main server file
 ├── frontend/                         # React application
 │   ├── public/                       # Static files
 │   ├── src/                          # React source code
 │   │   ├── pages/                    # Page components
+│   │   │   ├── CustomerDashboard.js  # Main dashboard
+│   │   │   ├── Feedback.jsx          # Customer feedback
+│   │   │   └── ServiceRatings.jsx    # Ratings dashboard
 │   │   ├── services/                 # API services
 │   │   └── inventory-management/     # Inventory UI components
 │   └── package.json
@@ -33,167 +44,155 @@ Enterprise-Application-Development/
 
 ## Features
 
-### User Management & Authentication
+### Core System Features
+
 - **Role-based Access Control**: Admin, Inventory Manager, Service Manager, Mechanic, Employee, Customer
 - **JWT Authentication**: Secure token-based authentication
 - **Permission System**: Granular permissions for different operations
-- **User Management Interface**: Create and manage inventory staff
+
+### Customer Feedback System
+
+- **Service Ratings**: 1-5 star rating system for services
+- **Feedback Collection**: Detailed customer feedback and comments
+- **Rating Analytics**: Dashboard with KPIs and breakdowns
+- **Search & Filtering**: Advanced filtering by rating, date, service type
+- **Data Visualization**: Charts and graphs using Recharts
 
 ### Inventory Management
+
 - **Parts Management**: Create, update, delete, and track spare parts
 - **Stock Control**: Real-time stock tracking and adjustments
 - **Location Management**: Warehouse, section, shelf, and bin tracking
-- **Category Organization**: Configurable part categories
-- **Multi-currency Support**: Handle different currencies
+- **Reorder Alerts**: Automatic low stock notifications
 
-### Smart Alerts & Monitoring
-- **Reorder Alerts**: Automatic low stock and out-of-stock notifications
-- **Alert Management**: Acknowledge and resolve alerts
-- **Stock Level Monitoring**: Min/max stock level enforcement
-
-### Reporting & Analytics
-- **Low Stock Reports**: Identify parts needing reorder
-- **Transaction Reports**: Detailed transaction history
-- **Inventory Summary**: Overview of inventory status
-- **Dashboard Analytics**: Key metrics and insights
-
-### Configuration Management
-- **Dynamic Configuration**: No hardcoded values
-- **Category Management**: Configurable part categories
-- **Currency Settings**: Multi-currency support
-- **Default Value Management**: Centralized configuration
-
-## User Roles & Permissions
-
-### Admin
-- **Full Access**: All system operations
-- **User Management**: Create and manage all users
-- **System Configuration**: Modify system settings
-
-### Inventory Manager
-- **Full Inventory Access**: All inventory operations
-- **Staff Management**: Manage inventory team
-- **Reports & Analytics**: View all reports
-- **Alert Management**: Manage all alerts
-
-### Service Manager
-- **Inventory Operations**: Create, update parts and stock
-- **Team Coordination**: Manage service team inventory needs
-- **Reports Access**: View inventory reports
-
-### Mechanic
-- **Parts Access**: View and manage parts
-- **Stock Requests**: Request parts and update usage
-
-### Employee
-- **Read Access**: View inventory and reports
-- **Basic Operations**: Limited inventory viewing
-
-### Customer
-- **No Inventory Access**: Standard customer features only
-
-## Setup Instructions
+## Quick Start Guide
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - MongoDB Atlas account or local MongoDB
 - npm or yarn package manager
 
-### Backend Setup
+### Environment Setup
 
-1. **Navigate to backend directory**
+1. **Backend Environment (.env)**
+   Create `backend/.env` with:
+
+   ```env
+   MONGO_URI=mongodb+srv://ewadanambi_db_user:QFQEKNS9pWPXcimP@ead.pk3etwe.mongodb.net/
+   DB_NAME=autoservicepro
+   PORT=5000
+   JWT_SECRET=supersecretkey
+   ```
+
+2. **Install Dependencies**
+
+   ```bash
+   # Backend dependencies
+   cd backend && npm install
+
+   # Frontend dependencies
+   cd ../frontend && npm install
+   ```
+
+3. **Seed Demo Data (Optional)**
+
    ```bash
    cd backend
+   npm run seed
    ```
 
-2. **Install dependencies**
+4. **Run the Applications**
+
+   Open two terminals:
+
+   **Terminal 1 - Backend:**
+
    ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   Create a `.env` file in the backend directory:
-   ```env
-   PORT=5000
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret_key
-   JWT_EXPIRE=30d
-   NODE_ENV=development
-   ```
-
-4. **Initialize Database**
-   Run the database initialization script to create default users and sample data:
-   ```bash
-   npm run init-db
-   ```
-
-5. **Start the server**
-   ```bash
-   npm run dev          # Development mode with nodemon
-   npm start            # Production mode
-   ```
-
-### Frontend Setup
-
-1. **Navigate to frontend directory**
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   Create a `.env` file in the frontend directory:
-   ```env
-   REACT_APP_API_URL=http://localhost:5000/api
-   ```
-
-4. **Start the development server**
-   ```bash
+   cd backend
    npm start
    ```
 
-### Default User Accounts
+   **Terminal 2 - Frontend:**
 
-After running the database initialization script, the following default accounts will be created:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 
-| Role | Email | Password | Permissions |
-|------|-------|----------|-------------|
-| Admin | admin@enterprise.com | admin123 | Full access |
-| Inventory Manager | inventory.manager@enterprise.com | inventory123 | Full inventory access |
-| Service Manager | service.manager@enterprise.com | service123 | Service & inventory operations |
-| Mechanic | mechanic@enterprise.com | mechanic123 | Parts access |
-| Employee | employee@enterprise.com | employee123 | Read-only access |
-| Customer | customer@enterprise.com | customer123 | No inventory access |
+The frontend dev server proxies `/api` to `http://localhost:5000`.
 
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login
 - `GET /api/auth/profile` - Get user profile
 
+### Customer Feedback & Ratings
+
+- `GET /api/ratings` - List ratings with query params: `page`, `limit`, `search`, `sortBy`, `sortOrder`, `dateFrom`, `dateTo`, `minRating`, `maxRating`, `serviceType`
+- `GET /api/ratings/summary` - Aggregated KPIs and breakdown for dashboard
+- `POST /api/ratings` - Create new rating/feedback
+- `POST /api/ratings/seed` - Seed random demo data
+
 ### Inventory Management
+
 - `GET /api/inventory/parts` - Get all parts
 - `POST /api/inventory/parts` - Create new part
 - `PUT /api/inventory/parts/:id` - Update part
 - `DELETE /api/inventory/parts/:id` - Delete part
 - `POST /api/inventory/stock/adjust` - Adjust stock levels
 - `GET /api/inventory/alerts` - Get reorder alerts
-- `GET /api/inventory/reports/low-stock` - Low stock report
 
-### User Management (Admin/Manager only)
-- `GET /api/inventory-users/users` - Get inventory users
-- `POST /api/inventory-users/users` - Create inventory user
-- `PUT /api/inventory-users/users/:id` - Update user
-- `PATCH /api/inventory-users/users/:id/toggle-status` - Toggle user status
+## User Roles & Access Levels
 
-## Database Schema
+| Role                  | Inventory Access   | Customer Feedback | Service Management |
+| --------------------- | ------------------ | ----------------- | ------------------ |
+| **Admin**             | Full Access        | Full Access       | Full Access        |
+| **Inventory Manager** | Full Inventory     | View Reports      | Limited            |
+| **Service Manager**   | Parts Operations   | Full Access       | Full Access        |
+| **Mechanic**          | Parts View/Request | View Only         | Service Operations |
+| **Employee**          | Read Only          | View Only         | Limited            |
+| **Customer**          | No Access          | Create/View Own   | Book Services      |
 
-### User Model
+## Technology Stack
+
+### Backend
+
+- **Runtime**: Node.js with Express.js
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT with bcryptjs
+- **API**: RESTful API architecture
+- **File Upload**: Multer for file handling
+
+### Frontend
+
+- **Framework**: React 18+ with Vite
+- **Routing**: React Router DOM
+- **Charts**: Recharts for data visualization
+- **HTTP Client**: Axios for API calls
+- **Icons**: React Icons
+- **Styling**: Modern CSS with responsive design
+
+### Database Schema
+
+#### Rating Model (Customer Feedback)
+
+```javascript
+{
+  customerName: String,
+  serviceType: String,
+  rating: Number (1-5),
+  comment: String,
+  serviceDate: Date,
+  createdAt: Date
+}
+```
+
+#### User Model
+
 ```javascript
 {
   name: String,
@@ -202,85 +201,62 @@ After running the database initialization script, the following default accounts
   role: String (enum),
   department: String,
   permissions: [String],
-  isActive: Boolean,
-  createdAt: Date,
-  updatedAt: Date
+  isActive: Boolean
 }
 ```
-
-### Part Model
-```javascript
-{
-  partNumber: String (unique),
-  name: String,
-  description: String,
-  category: String,
-  manufacturer: String,
-  supplier: String,
-  currentStock: Number,
-  minStockLevel: Number,
-  maxStockLevel: Number,
-  unitPrice: Number,
-  currency: String,
-  location: {
-    warehouse: String,
-    section: String,
-    shelf: String,
-    bin: String
-  },
-  createdBy: ObjectId
-}
-```
-
-## Security Features
-
-- **JWT Authentication**: Secure token-based authentication
-- **Password Hashing**: bcrypt for secure password storage
-- **Role-based Authorization**: Granular access control
-- **Input Validation**: Comprehensive input validation
-- **CORS Protection**: Cross-origin request security
-- **Environment Variables**: Secure configuration management
 
 ## Development Scripts
 
 ### Backend Scripts
+
 ```bash
-npm run dev          # Start development server with nodemon
 npm start            # Start production server
-npm run init-db      # Initialize database with default data
-npm run seed-data    # Alias for init-db
+npm run dev          # Development with --watch
+npm run seed         # Seed demo rating data
+npm test             # Run tests (placeholder)
 ```
 
 ### Frontend Scripts
+
 ```bash
-npm start            # Start development server
+npm run dev          # Start Vite dev server
+npm start            # Alias for dev
 npm run build        # Build for production
-npm test             # Run tests
+npm run preview      # Preview production build
 ```
 
-## Configuration
+## Key Features Implementation
 
-The system uses a configuration-driven approach to avoid hardcoded values:
+### Customer Feedback Dashboard
 
-### Backend Configuration
-- Database connection settings
-- JWT configuration
-- Default user permissions
-- Inventory categories and settings
+- **KPI Cards**: Average rating, total feedback, recent ratings
+- **Rating Distribution**: Visual breakdown by star rating
+- **Advanced Filtering**: Filter by date range, rating, service type
+- **Pagination**: Efficient data loading for large datasets
+- **Search Functionality**: Search through feedback comments
 
-### Frontend Configuration
-- API endpoints
-- Default values
-- UI configuration
-- Currency settings
+### Inventory Integration
+
+- **Real-time Stock Updates**: Live inventory tracking
+- **Smart Alerts**: Automated reorder notifications
+- **Multi-location Support**: Track parts across locations
+- **Role-based Permissions**: Control access by user role
+
+## Security Features
+
+- **JWT Authentication**: Secure token-based auth
+- **Password Hashing**: bcrypt for password security
+- **Role-based Authorization**: Granular access control
+- **Input Validation**: Comprehensive data validation
+- **CORS Protection**: Cross-origin request security
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
@@ -292,4 +268,4 @@ For support and questions, please contact the development team or create an issu
 
 ---
 
-**Note**: Remember to change default passwords in production and ensure proper environment configuration for security.
+**Note**: Remember to change default credentials in production and ensure proper environment configuration for security.
