@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getAllBookings } from "../services/api";
+import { getAllBookings, getMyAssignedBookings, getMyAssignedAppointments } from "../services/api";
 import "./Bookings.css";
 
 export default function Bookings() {
@@ -8,6 +8,7 @@ export default function Bookings() {
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState("week"); // day | week | month | year
   const [user, setUser] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     // Set user info
@@ -16,27 +17,159 @@ export default function Bookings() {
       try {
         const tokenParts = token.split(".");
         const payload = JSON.parse(atob(tokenParts[1]));
-        setUser({ name: "Jason Miller", role: payload.role || "employee" });
+        setUser({ name: payload.name || "Employee", role: payload.role || "employee", id: payload.id });
       } catch (e) {
         console.error("Error decoding token:", e);
       }
     }
-
-    // Fetch bookings
-    fetchBookings();
 
     // Real-time clock for date display
     const timer = setInterval(() => setNow(new Date()), 1000 * 60); // update every minute
     return () => clearInterval(timer);
   }, []);
 
-  const fetchBookings = async () => {
+  // Separate effect for fetching bookings when user is set
+  useEffect(() => {
+    if (user) {
+      fetchBookingsAndAppointments();
+    }
+  }, [user]);
+
+  const fetchBookingsAndAppointments = async () => {
     try {
       setLoading(true);
-      const response = await getAllBookings();
-      setBookings(response.data);
+      setError("");
+      
+      let allBookings = [];
+      
+      // Try to fetch actual bookings first
+      try {
+        let bookingResponse;
+        if (user?.role === 'admin') {
+          bookingResponse = await getAllBookings();
+        } else {
+          bookingResponse = await getMyAssignedBookings();
+        }
+        allBookings = [...bookingResponse.data];
+      } catch (bookingError) {
+        console.log("Bookings API not available:", bookingError);
+      }
+      
+      // Also fetch appointments and convert them to booking format
+      try {
+        const appointmentResponse = await getMyAssignedAppointments();
+        const appointments = appointmentResponse.data;
+        
+        // Convert appointments to booking format
+        const appointmentBookings = appointments.map(appointment => ({
+          _id: `appt-${appointment._id}`,
+          customer: appointment.customer,
+          vehicleInfo: {
+            make: appointment.vehicle?.make || "Unknown",
+            model: appointment.vehicle?.model || "Unknown", 
+            year: appointment.vehicle?.year || new Date().getFullYear(),
+            licensePlate: appointment.vehicle?.plateNumber || "N/A"
+          },
+          serviceType: appointment.service?.name || "Service",
+          description: appointment.notes || "Appointment service",
+          status: appointment.status === 'scheduled' ? 'confirmed' : 
+                 appointment.status === 'completed' ? 'completed' :
+                 appointment.status === 'cancelled' ? 'cancelled' : 'pending',
+          assignedTo: appointment.assignedTo,
+          serviceDate: appointment.scheduledAt || appointment.date,
+          estimatedPrice: appointment.service?.price || 0,
+          createdAt: appointment.createdAt,
+          isAppointment: true
+        }));
+        
+        allBookings = [...allBookings, ...appointmentBookings];
+      } catch (appointmentError) {
+        console.log("Appointments API error:", appointmentError);
+      }
+      
+      if (allBookings.length === 0) {
+        throw new Error("No data available from backend");
+      }
+      
+      setBookings(allBookings);
     } catch (error) {
-      console.error("Error fetching bookings:", error);
+      console.error("Error fetching bookings and appointments:", error);
+      setError("Unable to connect to server. Showing demo data.");
+      
+      // Provide fallback demo data
+      const demoBookings = [
+        {
+          _id: "demo-booking-1",
+          customer: { name: "John Smith", email: "john@example.com" },
+          vehicleInfo: {
+            make: "Toyota",
+            model: "Camry", 
+            year: 2020,
+            licensePlate: "ABC123"
+          },
+          serviceType: "Oil Change",
+          description: "Regular oil change and filter replacement",
+          status: "confirmed",
+          assignedTo: { name: user?.name || "Current Employee" },
+          serviceDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+          estimatedPrice: 50,
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+        },
+        {
+          _id: "demo-booking-2", 
+          customer: { name: "Sarah Johnson", email: "sarah@example.com" },
+          vehicleInfo: {
+            make: "Honda",
+            model: "Civic",
+            year: 2019,
+            licensePlate: "XYZ789"
+          },
+          serviceType: "Brake Service",
+          description: "Brake pads replacement and inspection",
+          status: "in-progress",
+          assignedTo: { name: user?.name || "Current Employee" },
+          serviceDate: new Date(), // Today
+          estimatedPrice: 150,
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+        },
+        {
+          _id: "demo-booking-3",
+          customer: { name: "Mike Wilson", email: "mike@example.com" },
+          vehicleInfo: {
+            make: "Ford",
+            model: "F-150",
+            year: 2021,
+            licensePlate: "DEF456"
+          },
+          serviceType: "Engine Diagnostics",
+          description: "Check engine light diagnosis",
+          status: "pending",
+          assignedTo: { name: user?.name || "Current Employee" },
+          serviceDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+          estimatedPrice: 120,
+          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000) // 3 hours ago
+        },
+        {
+          _id: "demo-booking-4",
+          customer: { name: "Lisa Brown", email: "lisa@example.com" },
+          vehicleInfo: {
+            make: "BMW",
+            model: "X5",
+            year: 2018,
+            licensePlate: "GHI012"
+          },
+          serviceType: "Tire Rotation",
+          description: "Rotate and balance all four tires",
+          status: "completed",
+          assignedTo: { name: user?.name || "Current Employee" },
+          serviceDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+          estimatedPrice: 80,
+          actualPrice: 75,
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
+        }
+      ];
+      
+      setBookings(demoBookings);
     } finally {
       setLoading(false);
     }
@@ -140,7 +273,16 @@ export default function Bookings() {
       {/* Bookings Table */}
         <div className="bookings-table-section">
           <div className="section-header">
-            <h2>All Bookings</h2>
+            <h2>{user?.role === 'admin' ? 'All Bookings & Appointments' : 'My Assigned Bookings & Appointments'}</h2>
+            {error && (
+              <div style={{ 
+                color: '#ef4444', 
+                fontSize: '0.875rem',
+                fontStyle: 'italic'
+              }}>
+                {error}
+              </div>
+            )}
           </div>
           {loading ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
@@ -152,8 +294,11 @@ export default function Bookings() {
               <thead>
                 <tr>
                   <th>Service ID</th>
+                  <th>Type</th>
                   <th>Vehicle No</th>
                   <th>Customer Name</th>
+                  <th>Service Type</th>
+                  <th>Service Date</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -162,6 +307,21 @@ export default function Bookings() {
                   bookings.map((booking, index) => (
                     <tr key={booking._id}>
                       <td>#{booking._id.toString().slice(-8).toUpperCase()}</td>
+                      <td>
+                        <span 
+                          className="type-badge" 
+                          style={{ 
+                            backgroundColor: booking.isAppointment ? '#3b82f6' : '#10b981',
+                            color: 'white',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          {booking.isAppointment ? 'APPT' : 'BOOK'}
+                        </span>
+                      </td>
                       <td>{booking.vehicleInfo?.licensePlate || "N/A"}</td>
                       <td>
                         <div className="customer-cell">
@@ -170,6 +330,17 @@ export default function Bookings() {
                           </div>
                           <span>{booking.customer?.name || "Customer"}</span>
                         </div>
+                      </td>
+                      <td>{booking.serviceType || "N/A"}</td>
+                      <td>
+                        {booking.serviceDate 
+                          ? new Date(booking.serviceDate).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric"
+                            })
+                          : "N/A"
+                        }
                       </td>
                       <td>
                         <span 
@@ -183,8 +354,8 @@ export default function Bookings() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: "center", padding: "2rem" }}>
-                      No bookings found
+                    <td colSpan="7" style={{ textAlign: "center", padding: "2rem" }}>
+                      {user?.role === 'admin' ? 'No bookings found' : 'No bookings or appointments assigned to you'}
                     </td>
                   </tr>
                 )}

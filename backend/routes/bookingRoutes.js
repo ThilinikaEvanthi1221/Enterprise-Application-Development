@@ -1,10 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { getAllBookings } = require("../controllers/bookingController");
-const { verifyToken } = require("../middleware/authMiddleware");
+const { getAllBookings, getMyAssignedBookings } = require("../controllers/bookingController");
+const { verifyToken, requireAdmin } = require("../middleware/authMiddleware");
 
-// All booking routes require authentication
-router.get("/", verifyToken, getAllBookings);
+// Employee routes - get their assigned bookings
+router.get("/my-assigned", verifyToken, getMyAssignedBookings);
+
+// Admin routes - get all bookings
+router.get("/", verifyToken, requireAdmin, getAllBookings);
 
 module.exports = router;
 

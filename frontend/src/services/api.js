@@ -53,6 +53,8 @@ export const getVehicles = () => API.get("/vehicles");
 export const getMyVehicles = () => API.get("/vehicles/my-vehicles");
 export const getServices = () => API.get("/services");
 export const getAppointments = () => API.get("/appointments");
+export const getMyAppointments = () => API.get("/appointments/my");
+export const getMyAssignedAppointments = () => API.get("/appointments/my-assignments");
 export const getTimeLogs = () => API.get("/time-logs");
 export const getDashboardMetrics = () => API.get("/dashboard/metrics");
 export const getDashboardStats = () => API.get("/dashboard/stats");
@@ -107,6 +109,7 @@ export const approveProject = (id, data) =>
   API.patch(`/projects/${id}/approve`, data);
 export const deleteProject = (id) => API.delete(`/projects/${id}`);
 export const getAllBookings = () => API.get("/bookings");
+export const getMyAssignedBookings = () => API.get("/bookings/my-assigned");
 export const getCustomers = () => API.get("/customers");
 export const getStaff = () => API.get("/staff");
 
