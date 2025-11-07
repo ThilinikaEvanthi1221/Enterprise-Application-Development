@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import api from "../services/api"; // use your axios instance if present
 import CustomerNavbar from "../components/layout/CustomerNavbar";
 import CustomerSidebar from "../components/layout/CustomerSidebar";
 import DashboardStats from "../components/layout/DashboardStats";
@@ -12,24 +13,28 @@ export default function CustomerDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/services/my-services", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await response.json();
-        setServices(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Error fetching services:", err);
-        setError("Failed to fetch service data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchServices();
   }, []);
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      // <-- change endpoint to the canonical services route
+      const res = await api.get("/services"); // previously "/services/my-services"
+      setServices(res.data || []);
+      setError("");
+    } catch (err) {
+      // better error logging: if server returned HTML this shows it
+      const msg =
+        err.response && err.response.data
+          ? JSON.stringify(err.response.data)
+          : err.message;
+      console.error("Error fetching services:", msg);
+      setError("Failed to load services");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stats = [
     { label: "Active Appointments", value: services.filter(a => a.status === "approved" || a.status === "ongoing").length, subtext: "Confirmed" },

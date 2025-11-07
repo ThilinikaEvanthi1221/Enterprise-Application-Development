@@ -3,12 +3,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
-const connectDB = require("./config/db");
-const Admin = require("./models/admin");
-const {
-  runMigrations,
-  isAutoMigrationEnabled,
-} = require("./utils/runMigrations");
+const connectDB = require('./config/db');
+const path = require("path");
 
 dotenv.config();
 
@@ -25,17 +21,26 @@ app.use(
 // Body parser
 app.use(express.json());
 
+// Connect to MongoDB
+connectDB();
+
+// Log when connected
+mongoose.connection.once('open', () => {
+  console.log('MongoDB connected successfully');
+});
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Mount modification routes
+app.use('/api/modifications', require('./routes/modificationRoutes'));
+
 // Connect to database and run migrations on startup
 (async () => {
   try {
-    // Connect to MongoDB
     await connectDB();
-
-    // Wait for connection to be ready (connectDB resolves when connected)
-    // Small delay to ensure db object is available
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Run automatic migrations if enabled
     if (isAutoMigrationEnabled()) {
       console.log("Running automatic database migrations...");
       const db = mongoose.connection.db;
@@ -50,9 +55,8 @@ app.use(express.json());
       );
     }
 
-    // Bootstrap: ensure admins collection exists and optionally seed a default admin
+    // Bootstrap default admin
     try {
-      // Ensure unique index on email (idempotent)
       await Admin.collection.createIndex({ email: 1 }, { unique: true });
 
       if (process.env.SEED_DEFAULT_ADMIN === "true") {
@@ -72,7 +76,6 @@ app.use(express.json());
     }
   } catch (error) {
     console.error("Startup error:", error);
-    // Don't exit - let server attempt to start anyway
   }
 })();
 
@@ -81,7 +84,10 @@ app.get("/api/test", (req, res) => {
   res.json({ msg: "Backend server is running!" });
 });
 
-// Routes with error handling
+// ----------------------------------------------
+// ROUTES REGISTRATION (with error-safe logging)
+// ----------------------------------------------
+
 try {
   app.use("/api/auth", require("./routes/authRoutes"));
   console.log("✓ Auth routes loaded");
@@ -166,7 +172,6 @@ try {
   console.error("✗ Notifications routes failed:", err.message);
 }
 
-// Inventory Management Routes
 try {
   app.use("/api/inventory", require("./inventory-management").routes);
   console.log("✓ Inventory routes loaded");
@@ -181,5 +186,25 @@ try {
   console.error("✗ Profile routes failed:", err.message);
 }
 
+// ----------------------------------------------
+// ✅ NEW: Modification Routes
+// ----------------------------------------------
+try {
+  const modificationRoutes = require("./routes/modificationRoutes");
+  app.use("/api/modifications", modificationRoutes);
+  console.log("✓ Modifications routes loaded");
+} catch (err) {
+  console.error("✗ Modifications routes failed:", err.message);
+}
+
+// Mount modification routes
+app.use('/api/modifications', require('./routes/modificationRoutes'));
+
+// Mount API routes
+app.use('/api/services', require('./routes/serviceRoutes'));
+
+// ----------------------------------------------
+// START SERVER
+// ----------------------------------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

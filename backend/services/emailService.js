@@ -69,6 +69,21 @@ const getPasswordResetConfirmationTemplate = (userName) => `
   </div>
 `;
 
+// Modification status template
+const getModificationStatusTemplate = (name, modificationType, status, note) => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h2 style="color: #2c3e50;">Vehicle Modification Update</h2>
+    <p>Dear ${name},</p>
+    <p>Your modification request for <strong>${modificationType}</strong> has been updated.</p>
+    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+      <p><strong>Current Status:</strong> ${status}</p>
+      ${note ? `<p><strong>Remarks:</strong> ${note}</p>` : ""}
+    </div>
+    <p>Thank you for trusting our service center with your vehicle.</p>
+    <p style="color: #7f8c8d; font-size: 0.9em;">- Vehicle Service Center Team</p>
+  </div>
+`;
+
 // Email sending functions
 const sendAppointmentConfirmation = async (appointment, user, vehicle) => {
   try {
@@ -134,9 +149,26 @@ const sendPasswordResetConfirmation = async (email, userName) => {
   }
 };
 
+const sendModificationStatusEmail = async (to, name, modificationType, status, note) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject: `Your Vehicle Modification Status: ${status}`,
+      html: getModificationStatusTemplate(name, modificationType, status, note)
+    });
+    console.log(`Modification status email sent to ${to}`);
+    return true;
+  } catch (error) {
+    console.error('Error sending modification status email:', error);
+    return false;
+  }
+};
+
 module.exports = {
   sendAppointmentConfirmation,
   sendNewAppointmentAlert,
   sendPasswordResetEmail,
-  sendPasswordResetConfirmation
+  sendPasswordResetConfirmation,
+  sendModificationStatusEmail
 };

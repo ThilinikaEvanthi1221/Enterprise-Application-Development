@@ -37,6 +37,12 @@ import CustomerServiceRequests from "./pages/CustomerServiceRequests";
 import EmployeeServiceManagement from "./pages/EmployeeServiceManagement";
 import AdminServiceManagement from "./pages/AdminServiceManagement";
 
+// Modification Management
+import RequestModificationPage from "./modification-management/pages/RequestModificationPage";
+import ModificationUpdatesPage from "./modification-management/pages/ModificationUpdatesPage";
+import ModificationDashboardPage from "./modification-management/pages/ModificationDashboardPage";
+import AdminModificationPanel from "./modification-management/pages/AdminModificationPanel";
+
 function App() {
   return (
     <Router>
@@ -91,6 +97,16 @@ function App() {
           }
         />
 
+        {/* ✅ Fixed Admin Modifications Route */}
+        <Route
+          path="/admin/modifications"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AdminModificationPanel />
+            </PrivateRoute>
+          }
+        />
+
         {/* 👷 Employee Routes */}
         <Route
           path="/employee/*"
@@ -118,8 +134,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
-        {/* 🧾 Customer Service Requests / Booking Page */}
         <Route
           path="/customer/service-requests"
           element={
@@ -128,14 +142,24 @@ function App() {
             </PrivateRoute>
           }
         />
-
-        {/* 🔁 Redirect root to Customer Dashboard */}
         <Route
-          path="/"
-          element={<Navigate to="/customer/dashboard" replace />}
+          path="/modification/dashboard"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <ModificationDashboardPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/modification-updates"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <ModificationUpdatesPage />
+            </PrivateRoute>
+          }
         />
 
-        {/* 🧩 Legacy / Shared Routes */}
+        {/* 🧩 Shared Routes */}
         <Route
           path="/users"
           element={

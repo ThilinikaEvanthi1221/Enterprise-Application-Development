@@ -17,6 +17,7 @@ const CustomerSidebar = () => {
     { name: "Book Appointment", icon: <Calendar size={18} />, path: "/customer/service-requests" },
     { name: "My Appointments", icon: <ClipboardList size={18} />, path: "/customer/appointments" },
     { name: "Service Requests", icon: <Wrench size={18} />, path: "/customer/service-requests" },
+    { name: "Vehicle Modification", icon: <Wrench size={18} />, path: "/modification/dashboard" },
     { name: "My Vehicles", icon: <Car size={18} />, path: "/customer/vehicles" },
     { name: "Available Services", icon: <Wrench size={18} />, path: "/customer/services" },
     { name: "Service History", icon: <History size={18} />, path: "/customer/history" },

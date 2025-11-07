@@ -10,3 +10,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.input {
+  @apply w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 
+         focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-200;
+}
+
