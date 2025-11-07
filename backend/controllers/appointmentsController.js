@@ -22,12 +22,19 @@ exports.listAppointments = async (req, res) => {
 
 exports.listMyAssignments = async (req, res) => {
   try {
+    console.log("listMyAssignments called");
+    console.log("User ID:", req.user.id);
+    console.log("User role:", req.user.role);
+
     const items = await Appointment.find({ assignedTo: req.user.id })
       .populate("customer", "name email")
       .populate("vehicle")
       .populate("service")
       .populate("assignedTo", "name email role")
       .sort({ date: 1 }); // Sort by date ascending
+
+    console.log(`Found ${items.length} assigned appointments`);
+
     return res.json(items);
   } catch (err) {
     console.error("Error listing assigned appointments:", err);
