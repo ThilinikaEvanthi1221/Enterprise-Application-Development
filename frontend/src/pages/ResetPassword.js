@@ -33,7 +33,6 @@ export default function ResetPassword() {
 
   useEffect(() => {
     verifyToken();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleSubmit = async (e) => {

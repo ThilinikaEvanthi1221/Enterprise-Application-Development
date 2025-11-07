@@ -48,7 +48,6 @@ export default function Profile() {
 
   useEffect(() => {
     if (!loading) loadVehicles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   const loadProfile = async () => {
