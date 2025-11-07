@@ -80,7 +80,7 @@ export default function VehicleRegister() {
   };
 
   return (
-    <div className="auth-container" style={{ background: "#f3f4f6" }}>
+    <div className="auth-container" style={{ background: "#1a56db" }}>
       <div
         className="auth-wrapper"
         style={{ maxWidth: "880px", width: "100%" }}
