@@ -73,8 +73,58 @@ export default function CustomerDashboard() {
       setAppointments(userAppointments);
       setStats(calculatedStats);
     } catch (err) {
-      setError("Failed to fetch appointments");
       console.error("Error fetching appointments:", err);
+      setError("Unable to connect to server. Showing demo data.");
+      
+      // Fallback demo data when backend is not available
+      const demoAppointments = [
+        {
+          _id: '1',
+          service: { name: 'Oil Change' },
+          status: 'confirmed',
+          date: new Date('2024-12-15T10:00:00Z'),
+          progress: 75,
+          vehicle: { make: 'Toyota', model: 'Camry' },
+          assignedTo: { name: 'John Smith' }
+        },
+        {
+          _id: '2',
+          service: { name: 'Brake Service' },
+          status: 'pending',
+          date: new Date('2024-12-20T14:00:00Z'),
+          progress: 0,
+          vehicle: { make: 'Honda', model: 'Civic' },
+          assignedTo: { name: 'Jane Doe' }
+        },
+        {
+          _id: '3',
+          service: { name: 'Engine Diagnostics' },
+          status: 'completed',
+          date: new Date('2024-11-25T09:00:00Z'),
+          progress: 100,
+          vehicle: { make: 'Ford', model: 'Focus' },
+          assignedTo: { name: 'Mike Johnson' }
+        },
+        {
+          _id: '4',
+          service: { name: 'Tire Rotation' },
+          status: 'in-progress',
+          date: new Date('2024-12-10T11:00:00Z'),
+          progress: 50,
+          vehicle: { make: 'Nissan', model: 'Sentra' },
+          assignedTo: { name: 'Sarah Wilson' }
+        }
+      ];
+
+      const demoStats = {
+        active: demoAppointments.filter(apt => apt.status === 'confirmed').length,
+        pending: demoAppointments.filter(apt => apt.status === 'pending').length,
+        completed: demoAppointments.filter(apt => apt.status === 'completed').length,
+        total: demoAppointments.length
+      };
+
+      setAppointments(demoAppointments);
+      setStats(demoStats);
     } finally {
       setLoading(false);
     }
