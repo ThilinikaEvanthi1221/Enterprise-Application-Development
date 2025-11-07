@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getMyVehicles } from "../services/api";
+import AppointmentStore from "../utils/AppointmentStore";
 
 const CustomerServiceRequests = () => {
   const [services, setServices] = useState([]);
@@ -7,6 +8,8 @@ const CustomerServiceRequests = () => {
   const [loading, setLoading] = useState(true);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [checkingSlots, setCheckingSlots] = useState(false);
 
   const [formData, setFormData] = useState({
     serviceType: "Oil Change",
@@ -16,6 +19,9 @@ const CustomerServiceRequests = () => {
     laborHours: 1,
     partsRequired: [],
     customerNotes: "",
+    scheduledDate: "",
+    timeSlot: "",
+    appointmentNotes: "",
   });
 
   const serviceTypes = [
@@ -27,7 +33,19 @@ const CustomerServiceRequests = () => {
     "AC Service",
     "Battery Replacement",
     "General Inspection",
-    "Other",
+  ];
+
+  // Available time slots
+  const timeSlots = [
+    "08:00 AM - 09:00 AM",
+    "09:00 AM - 10:00 AM",
+    "10:00 AM - 11:00 AM",
+    "11:00 AM - 12:00 PM",
+    "12:00 PM - 01:00 PM",
+    "01:00 PM - 02:00 PM",
+    "02:00 PM - 03:00 PM",
+    "03:00 PM - 04:00 PM",
+    "04:00 PM - 05:00 PM",
   ];
 
   useEffect(() => {
@@ -57,17 +75,57 @@ const CustomerServiceRequests = () => {
     try {
       const response = await getMyVehicles();
       console.log("My vehicles from API:", response.data);
-      setVehicles(Array.isArray(response.data) ? response.data : []);
+      setVehicles(
+        Array.isArray(response.data.vehicles) ? response.data.vehicles : []
+      );
     } catch (error) {
       console.error("Error fetching vehicles:", error);
       setVehicles([]);
     }
   };
 
+  const checkAvailableSlots = async (date) => {
+    if (!date) {
+      setAvailableSlots([]);
+      return;
+    }
+
+    setCheckingSlots(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:5000/api/appointments/available-slots?date=${date}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        setAvailableSlots(data.slots || []);
+      } else {
+        console.error("Error checking slots:", data.msg);
+        setAvailableSlots([]);
+      }
+    } catch (error) {
+      console.error("Error checking available slots:", error);
+      setAvailableSlots([]);
+    } finally {
+      setCheckingSlots(false);
+    }
+  };
+
+  const handleDateChange = (date) => {
+    setFormData({ ...formData, scheduledDate: date, timeSlot: "" });
+    checkAvailableSlots(date);
+  };
+
   const handleRequestService = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      
       const response = await fetch(
         "http://localhost:5000/api/services/request",
         {
@@ -83,7 +141,33 @@ const CustomerServiceRequests = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Service request submitted successfully!");
+        const appointmentDate = new Date(data.appointment.date);
+        
+        // Create notification for staff using AppointmentStore
+        AppointmentStore.addNotification({
+          id: Date.now().toString(),
+          type: 'NEW_APPOINTMENT',
+          title: 'New Appointment Request',
+          message: `New appointment request from ${user.name} for ${formData.serviceType} on ${appointmentDate.toLocaleDateString()} at ${formData.timeSlot}`,
+          forRole: 'employee',
+          appointmentId: data.appointment._id,
+          createdAt: new Date().toISOString(),
+          read: false
+        });
+        
+        const message = `✓ Service request submitted successfully!\n\nYour appointment is confirmed for:\n${appointmentDate.toLocaleDateString(
+          "en-US",
+          {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        )} at ${formData.timeSlot}\n\nService: ${data.service.name}\nVehicle: ${
+          data.service.vehicle.make
+        } ${data.service.vehicle.model}\n\nWe'll see you then!`;
+
+        alert(message);
         setShowRequestModal(false);
         setFormData({
           serviceType: "Oil Change",
@@ -93,6 +177,9 @@ const CustomerServiceRequests = () => {
           laborHours: 1,
           partsRequired: [],
           customerNotes: "",
+          scheduledDate: "",
+          timeSlot: "",
+          appointmentNotes: "",
         });
         fetchMyServices();
       } else {
@@ -153,196 +240,196 @@ const CustomerServiceRequests = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            My Service Requests
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Track and manage your vehicle service requests
-          </p>
+      <div className="max-w-4xl mx-auto mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-4xl">📅</span>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">
+                Book an Appointment
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Schedule your vehicle service appointment
+              </p>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={() => setShowRequestModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold shadow-md transition"
-        >
-          + Request New Service
-        </button>
       </div>
 
-      {/* Services List */}
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600">Loading services...</p>
-        </div>
-      ) : services.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <svg
-            className="mx-auto h-16 w-16 text-gray-400 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No service requests yet
-          </h3>
-          <p className="text-gray-500 mb-6">
-            Get started by requesting your first service
-          </p>
-          <button
-            onClick={() => setShowRequestModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
-          >
-            Request Service
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-6">
-          {services.map((service) => (
-            <div
-              key={service._id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      {service.name}
-                    </h3>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                        service.status
-                      )}`}
-                    >
-                      {service.status?.toUpperCase()}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3">
-                    {service.description || "No description provided"}
-                  </p>
+      {/* Booking Form - Always Visible */}
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-xl">
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <span className="text-2xl">📝</span>
+              Service Appointment Form
+            </h2>
+            <p className="text-blue-100 mt-1 text-sm">
+              Select your preferred time slot and service details
+            </p>
+          </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">Service Type:</span>
-                      <p className="font-medium text-gray-900">
-                        {service.serviceType}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Vehicle:</span>
-                      <p className="font-medium text-gray-900">
-                        {service.vehicle?.make} {service.vehicle?.model} (
-                        {service.vehicle?.plateNumber})
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Estimated Cost:</span>
-                      <p className="font-semibold text-green-600">
-                        ${service.estimatedCost?.toFixed(2) || "0.00"}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Progress:</span>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full transition-all"
-                            style={{ width: `${service.progress || 0}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs font-medium">
-                          {service.progress || 0}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+          <form onSubmit={handleRequestService} className="p-6 space-y-6">
+            {/* STEP 1: Appointment Scheduling - FIRST */}
+            <div className="bg-blue-50 border-2 border-blue-200 p-5 rounded-lg">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                  1
+                </span>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Select Your Appointment Slot
+                </h3>
+              </div>
 
-                  {service.assignedTo && (
-                    <div className="mt-3 text-sm">
-                      <span className="text-gray-500">Assigned to:</span>
-                      <span className="font-medium text-gray-900 ml-2">
-                        {service.assignedTo.name}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="mt-3 flex gap-4 text-sm text-gray-600">
-                    <span>Requested: {formatDate(service.requestedDate)}</span>
-                    {service.startDate && (
-                      <span>Started: {formatDate(service.startDate)}</span>
-                    )}
-                    {service.completionDate && (
-                      <span>
-                        Completed: {formatDate(service.completionDate)}
-                      </span>
-                    )}
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Appointment Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.scheduledDate}
+                    onChange={(e) => handleDateChange(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
                 </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSelectedService(service)}
-                    className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:bg-blue-50 text-sm font-medium"
+                <div>
+                  <label className="flex text-sm font-medium text-gray-700 mb-2 items-center justify-between">
+                    <span>Time Slot *</span>
+                    {checkingSlots && (
+                      <span className="text-xs text-blue-600 animate-pulse">
+                        Checking availability...
+                      </span>
+                    )}
+                  </label>
+                  <select
+                    value={formData.timeSlot}
+                    onChange={(e) =>
+                      setFormData({ ...formData, timeSlot: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                    disabled={!formData.scheduledDate || checkingSlots}
                   >
-                    View Details
-                  </button>
-                  {["requested", "pending", "approved"].includes(
-                    service.status
-                  ) && (
-                    <button
-                      onClick={() => handleCancelService(service._id)}
-                      className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:bg-red-50 text-sm font-medium"
-                    >
-                      Cancel
-                    </button>
+                    <option value="">
+                      {!formData.scheduledDate
+                        ? "Select a date first"
+                        : checkingSlots
+                        ? "Checking slots..."
+                        : "Select a time slot"}
+                    </option>
+                    {availableSlots.map((slotInfo) => (
+                      <option
+                        key={slotInfo.slot}
+                        value={slotInfo.slot}
+                        disabled={!slotInfo.available}
+                        className={slotInfo.available ? "" : "text-gray-400"}
+                      >
+                        {slotInfo.slot} {slotInfo.available ? "✓" : "✗ Booked"}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.scheduledDate && availableSlots.length > 0 && (
+                    <p className="mt-2 text-xs text-gray-600">
+                      {availableSlots.filter((s) => s.available).length} of{" "}
+                      {availableSlots.length} slots available
+                    </p>
                   )}
                 </div>
               </div>
 
-              {service.customerNotes && (
-                <div className="mt-4 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
-                  <p className="text-sm text-gray-700">
-                    <strong>Your Notes:</strong> {service.customerNotes}
+              {formData.scheduledDate && formData.timeSlot && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800 flex items-center gap-2">
+                    <span className="text-xl">✓</span>
+                    <span>
+                      <strong>Slot confirmed:</strong>{" "}
+                      {new Date(formData.scheduledDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}{" "}
+                      at {formData.timeSlot}
+                    </span>
                   </p>
                 </div>
               )}
 
-              {service.notes && (
-                <div className="mt-2 p-3 bg-yellow-50 rounded border-l-4 border-yellow-500">
-                  <p className="text-sm text-gray-700">
-                    <strong>Employee Notes:</strong> {service.notes}
-                  </p>
+              {/* Slot Availability Visual Grid */}
+              {formData.scheduledDate && availableSlots.length > 0 && (
+                <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    Slot Availability Overview
+                  </h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {availableSlots.map((slotInfo) => (
+                      <button
+                        key={slotInfo.slot}
+                        type="button"
+                        onClick={() => {
+                          if (slotInfo.available) {
+                            setFormData({
+                              ...formData,
+                              timeSlot: slotInfo.slot,
+                            });
+                          }
+                        }}
+                        disabled={!slotInfo.available}
+                        className={`p-2 rounded text-xs font-medium transition-all ${
+                          formData.timeSlot === slotInfo.slot
+                            ? "bg-green-600 text-white ring-2 ring-green-400"
+                            : slotInfo.available
+                            ? "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
+                            : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-1">
+                          <span>{slotInfo.slot.split(" - ")[0]}</span>
+                          <span className="text-[10px]">
+                            {slotInfo.available ? "✓ Available" : "✗ Booked"}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-4 mt-3 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
+                      <span className="text-gray-600">Available</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-gray-100 border border-gray-300 rounded"></div>
+                      <span className="text-gray-600">Booked</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-green-600 rounded"></div>
+                      <span className="text-gray-600">Selected</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Request Service Modal */}
-      {showRequestModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Request New Service
-              </h2>
-              <p className="text-gray-600 mt-1">
-                Fill in the details for your service request
-              </p>
-            </div>
+            {/* STEP 2: Service Details - SECOND */}
+            <div className="bg-gray-50 border-2 border-gray-200 p-5 rounded-lg">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="bg-gray-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                  2
+                </span>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Service Details
+                </h3>
+              </div>
 
-            <form onSubmit={handleRequestService} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Service Type *
@@ -447,7 +534,10 @@ const CustomerServiceRequests = () => {
                 <textarea
                   value={formData.customerNotes}
                   onChange={(e) =>
-                    setFormData({ ...formData, customerNotes: e.target.value })
+                    setFormData({
+                      ...formData,
+                      customerNotes: e.target.value,
+                    })
                   }
                   placeholder="Any special requirements or notes..."
                   rows={2}
@@ -455,212 +545,37 @@ const CustomerServiceRequests = () => {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-                >
-                  Submit Request
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowRequestModal(false)}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Service Details Modal */}
-      {selectedService && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedService.name}
-                  </h2>
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                      selectedService.status
-                    )}`}
-                  >
-                    {selectedService.status?.toUpperCase()}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setSelectedService(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Service Type
-                  </h4>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {selectedService.serviceType}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Vehicle
-                  </h4>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {selectedService.vehicle?.make}{" "}
-                    {selectedService.vehicle?.model}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {selectedService.vehicle?.plateNumber}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Estimated Cost
-                  </h4>
-                  <p className="text-2xl font-bold text-green-600">
-                    ${selectedService.estimatedCost?.toFixed(2) || "0.00"}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Actual Cost
-                  </h4>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {selectedService.actualCost
-                      ? `$${selectedService.actualCost.toFixed(2)}`
-                      : "TBD"}
-                  </p>
-                </div>
-              </div>
-
               <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  Progress
-                </h4>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-blue-600 h-4 rounded-full transition-all"
-                      style={{ width: `${selectedService.progress || 0}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-lg font-bold text-gray-900">
-                    {selectedService.progress || 0}%
-                  </span>
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Appointment Instructions (Optional)
+                </label>
+                <textarea
+                  value={formData.appointmentNotes}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      appointmentNotes: e.target.value,
+                    })
+                  }
+                  placeholder="Any specific instructions for your appointment (e.g., 'Please call when you arrive')..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-
-              {selectedService.description && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Description
-                  </h4>
-                  <p className="text-gray-700">{selectedService.description}</p>
-                </div>
-              )}
-
-              {selectedService.assignedTo && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Assigned Employee
-                  </h4>
-                  <p className="text-gray-900">
-                    {selectedService.assignedTo.name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {selectedService.assignedTo.email}
-                  </p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">
-                    Requested
-                  </h4>
-                  <p className="text-gray-900">
-                    {formatDate(selectedService.requestedDate)}
-                  </p>
-                </div>
-                {selectedService.startDate && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-1">
-                      Started
-                    </h4>
-                    <p className="text-gray-900">
-                      {formatDate(selectedService.startDate)}
-                    </p>
-                  </div>
-                )}
-                {selectedService.completionDate && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-1">
-                      Completed
-                    </h4>
-                    <p className="text-gray-900">
-                      {formatDate(selectedService.completionDate)}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {selectedService.partsRequired &&
-                selectedService.partsRequired.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">
-                      Parts Required
-                    </h4>
-                    <div className="space-y-2">
-                      {selectedService.partsRequired.map((part, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                        >
-                          <span className="text-gray-900">{part.name}</span>
-                          <span className="text-gray-600">
-                            Qty: {part.quantity} - ${part.cost?.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
             </div>
 
-            <div className="p-6 border-t bg-gray-50">
+            <div className="flex gap-3 pt-4">
               <button
-                onClick={() => setSelectedService(null)}
-                className="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-semibold transition"
+                type="submit"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
               >
-                Close
+                <span className="text-xl">✓</span>
+                Confirm Appointment
               </button>
             </div>
-          </div>
+          </form>
         </div>
-      )}
+      </div>
     </div>
   );
 };

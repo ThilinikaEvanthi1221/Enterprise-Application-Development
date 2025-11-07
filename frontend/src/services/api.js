@@ -1,16 +1,44 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: "http://localhost:5000/api" });
+const API = axios.create({
+  baseURL: "http://localhost:5000/api",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
 
 // Attach JWT token if present
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${token}`;
+API.interceptors.request.use(
+  (config) => {
+    console.log("Making request to:", config.url);
+    console.log("Request data:", config.data);
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    console.error("Request error:", error);
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Add response interceptor for better error handling
+API.interceptors.response.use(
+  (response) => {
+    console.log("Response received:", response.data);
+    return response;
+  },
+  (error) => {
+    console.error("Response error:", error);
+    console.error("Error response:", error.response);
+    return Promise.reject(error);
+  }
+);
 
 // Auth
 export const signup = (data) => API.post("/auth/signup", data);
@@ -81,6 +109,30 @@ export const deleteProject = (id) => API.delete(`/projects/${id}`);
 export const getAllBookings = () => API.get("/bookings");
 export const getCustomers = () => API.get("/customers");
 export const getStaff = () => API.get("/staff");
+
+export const createVehicle = (payload) => {
+  return API.post(`/vehicles`, payload);
+};
+
+export const getVehicleByNumber = (vehicleNumber) => {
+  return API.get("/vehicles/lookup", {
+    params: { plateNumber: vehicleNumber },
+  });
+};
+
+// Profile
+export const getProfile = () => API.get("/profile");
+export const updateProfile = (data) => API.put("/profile", data);
+
+// Add vehicles by owner
+export const getVehiclesByOwner = (userId) => {
+  return API.get(`/vehicles/owner/${userId}`);
+};
+
+export const uploadProfileImage = (formData) =>
+  API.post("/users/me/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 
 // Export the API instance as default for inventory management
 export default API;

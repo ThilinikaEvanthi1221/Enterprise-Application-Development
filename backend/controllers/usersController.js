@@ -12,7 +12,9 @@ exports.listUsers = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("name email role createdAt");
+    const user = await User.findById(req.params.id).select(
+      "name email role createdAt"
+    );
     if (!user) return res.status(404).json({ msg: "User not found" });
     return res.json(user);
   } catch (err) {
@@ -41,9 +43,16 @@ exports.updateUser = async (req, res) => {
     if (email) update.email = email;
     if (role) update.role = role;
     if (password) update.password = await bcrypt.hash(password, 10);
-    const user = await User.findByIdAndUpdate(req.params.id, update, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+    });
     if (!user) return res.status(404).json({ msg: "User not found" });
-    return res.json({ id: user._id, name: user.name, email: user.email, role: user.role });
+    return res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
   } catch (err) {
     return res.status(500).json({ msg: err.message });
   }
@@ -58,5 +67,3 @@ exports.deleteUser = async (req, res) => {
     return res.status(500).json({ msg: err.message });
   }
 };
-
-

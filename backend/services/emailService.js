@@ -42,6 +42,33 @@ const getNewAppointmentAlertTemplate = (appointment, customer, vehicle) => `
   </div>
 `;
 
+const getPasswordResetTemplate = (resetUrl, userName) => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h2 style="color: #2c3e50;">Password Reset Request</h2>
+    <p>Dear ${userName},</p>
+    <p>We received a request to reset your password. Click the button below to reset it:</p>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${resetUrl}" style="background-color: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
+    </div>
+    <p>Or copy and paste this link into your browser:</p>
+    <p style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; word-break: break-all;">${resetUrl}</p>
+    <p style="color: #e74c3c; font-weight: bold;">This link will expire in 1 hour.</p>
+    <p>If you didn't request a password reset, please ignore this email or contact support if you have concerns.</p>
+    <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 30px;">Thank you,<br>The Support Team</p>
+  </div>
+`;
+
+const getPasswordResetConfirmationTemplate = (userName) => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h2 style="color: #27ae60;">Password Successfully Reset</h2>
+    <p>Dear ${userName},</p>
+    <p>Your password has been successfully reset.</p>
+    <p>You can now log in with your new password.</p>
+    <p>If you didn't make this change, please contact support immediately.</p>
+    <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 30px;">Thank you,<br>The Support Team</p>
+  </div>
+`;
+
 // Email sending functions
 const sendAppointmentConfirmation = async (appointment, user, vehicle) => {
   try {
@@ -75,7 +102,41 @@ const sendNewAppointmentAlert = async (appointment, customer, vehicle, staffEmai
   }
 };
 
+const sendPasswordResetEmail = async (email, resetUrl, userName) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Request',
+      html: getPasswordResetTemplate(resetUrl, userName)
+    });
+    console.log('Password reset email sent to:', email);
+    return true;
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw new Error('Failed to send password reset email');
+  }
+};
+
+const sendPasswordResetConfirmation = async (email, userName) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Successful',
+      html: getPasswordResetConfirmationTemplate(userName)
+    });
+    console.log('Password reset confirmation email sent to:', email);
+    return true;
+  } catch (error) {
+    console.error('Error sending password reset confirmation email:', error);
+    return false;
+  }
+};
+
 module.exports = {
   sendAppointmentConfirmation,
-  sendNewAppointmentAlert
+  sendNewAppointmentAlert,
+  sendPasswordResetEmail,
+  sendPasswordResetConfirmation
 };
