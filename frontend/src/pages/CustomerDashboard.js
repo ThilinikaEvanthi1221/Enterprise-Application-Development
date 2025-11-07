@@ -192,6 +192,7 @@ export default function CustomerDashboard() {
     { name: "🚗 My Vehicles", path: "/customer/vehicles", icon: "🚗" },
     { name: "📋 Service History", path: "/customer/history", icon: "📋" },
     { name: "👤 My Profile", path: "/profile", icon: "👤" },
+    { name: "📝 Registration", path: "/vehicle-register", icon: "👤" },
   ];
 
   return (
