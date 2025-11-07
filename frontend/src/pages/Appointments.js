@@ -11,7 +11,7 @@ const Appointments = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showManageModal, setShowManageModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("pending");
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
 
@@ -200,19 +200,6 @@ const Appointments = () => {
         <div className="mb-4 flex gap-2 flex-wrap">
           <button
             onClick={() => {
-              setStatusFilter("all");
-              setCurrentPage(1);
-            }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              statusFilter === "all"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            All ({appointments.length})
-          </button>
-          <button
-            onClick={() => {
               setStatusFilter("pending");
               setCurrentPage(1);
             }}
@@ -280,6 +267,19 @@ const Appointments = () => {
           >
             Cancelled (
             {appointments.filter((a) => a.status === "cancelled").length})
+          </button>
+          <button
+            onClick={() => {
+              setStatusFilter("all");
+              setCurrentPage(1);
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              statusFilter === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            All ({appointments.length})
           </button>
         </div>
 
