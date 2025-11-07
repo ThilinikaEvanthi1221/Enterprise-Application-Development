@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppointmentForm from "../components/appointments/AppointmentForm";
-import API from "../services/api";
+import AppointmentStore from "../utils/AppointmentStore";
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
@@ -10,7 +10,13 @@ export default function CustomerDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
+  const [stats, setStats] = useState({
+    active: 0,
+    pending: 0,
+    completed: 0,
+    total: 0
+  });
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
@@ -19,10 +25,42 @@ export default function CustomerDashboard() {
     fetchActiveServices();
   }, []);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = () => {
     try {
-      const response = await API.get("/appointments/my");
-      setAppointments(response.data);
+      console.log('Fetching appointments from store...');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!user.id) {
+        setError('Please log in to view appointments');
+        setLoading(false);
+        return;
+      }
+
+      // Get all appointments from store
+      const allAppointments = AppointmentStore.getAppointments();
+      
+      // Filter appointments for current user
+      const userAppointments = allAppointments.filter(apt => apt.customerId === user.id);
+      
+      // Calculate stats from appointments array
+      const calculatedStats = userAppointments.reduce((acc, apt) => {
+        switch(apt.status) {
+          case 'in-progress':
+            acc.active++;
+            break;
+          case 'pending':
+            acc.pending++;
+            break;
+          case 'completed':
+            acc.completed++;
+            break;
+        }
+        acc.total++;
+        return acc;
+      }, { active: 0, pending: 0, completed: 0, total: 0 });
+
+      setAppointments(userAppointments);
+      setStats(calculatedStats);
     } catch (err) {
       setError("Failed to fetch appointments");
       console.error("Error fetching appointments:", err);

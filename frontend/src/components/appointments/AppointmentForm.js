@@ -1,6 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AppointmentStore from '../../utils/AppointmentStore';
+
+// Hardcoded vehicle options
+const vehicleOptions = [
+  { id: '1', name: 'Toyota Camry (2020) - ABC123' },
+  { id: '2', name: 'Honda CR-V (2019) - XYZ789' },
+  { id: '3', name: 'Ford F-150 (2021) - DEF456' }
+];
+
+// Hardcoded service options
+const serviceOptions = [
+  { id: '1', name: 'Oil Change', price: 79.99, duration: 45 },
+  { id: '2', name: 'Tire Rotation', price: 49.99, duration: 30 },
+  { id: '3', name: 'Brake Service', price: 199.99, duration: 90 },
+  { id: '4', name: 'Engine Diagnostic', price: 89.99, duration: 60 },
+  { id: '5', name: 'AC Service', price: 129.99, duration: 60 }
+];
 
 const AppointmentForm = () => {
   const navigate = useNavigate();
@@ -11,29 +27,9 @@ const AppointmentForm = () => {
     time: '',
     notes: ''
   });
-  const [vehicles, setVehicles] = useState([]);
-  const [services, setServices] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [vehiclesResponse, servicesResponse] = await Promise.all([
-          axios.get('/api/vehicles/my'),
-          axios.get('/api/services')
-        ]);
-        setVehicles(vehiclesResponse.data);
-        setServices(servicesResponse.data);
-      } catch (err) {
-        setError('Failed to load form data');
-        console.error('Error fetching form data:', err);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,18 +45,71 @@ const AppointmentForm = () => {
     setError('');
     setSuccess('');
 
-    // Combine date and time
-    const dateTime = new Date(formData.date + 'T' + formData.time);
-
     try {
-      const response = await axios.post('/api/appointments', {
-        vehicle: formData.vehicle,
-        service: formData.service,
-        date: dateTime.toISOString(),
-        notes: formData.notes
+      // Validate all required fields
+      if (!formData.vehicle || !formData.service || !formData.date || !formData.time) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // Get selected vehicle and service details
+      const vehicle = vehicleOptions.find(v => v.id === formData.vehicle);
+      const service = serviceOptions.find(s => s.id === formData.service);
+      
+      // Create appointment datetime
+      const dateTime = new Date(formData.date + 'T' + formData.time);
+
+      // Get user info
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+      // Check if time is within business hours (8 AM to 6 PM)
+      const hour = dateTime.getHours();
+      if (hour < 8 || hour >= 18) {
+        throw new Error('Please select a time between 8 AM and 6 PM');
+      }
+
+      // Create new appointment
+      const newAppointment = {
+        id: Date.now().toString(), // Simple unique ID
+        customerId: user.id,
+        customerName: user.name,
+        vehicle: vehicle,
+        service: service,
+        dateTime: dateTime.toISOString(),
+        notes: formData.notes,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      // Save appointment to local storage
+      const savedAppointment = AppointmentStore.addAppointment(newAppointment);
+
+      // Create notification for staff
+      const notif = AppointmentStore.addNotification({
+        id: Date.now().toString(),
+        type: 'NEW_APPOINTMENT',
+        title: 'New Appointment Request',
+        message: `New appointment request from ${user.name} for ${service.name} on ${dateTime.toLocaleDateString()} at ${dateTime.toLocaleTimeString()}`,
+        forRole: 'employee',
+        appointmentId: savedAppointment.id,
+        createdAt: new Date().toISOString(),
+        read: false
       });
 
-      setSuccess('Appointment booked successfully!');
+      console.log('Saved appointment:', savedAppointment);
+      console.log('Created notification:', notif);
+
+      // Show confirmation message
+      setSuccess(
+        `Appointment request submitted successfully!\n
+        Vehicle: ${vehicle.name}\n
+        Service: ${service.name}\n
+        Date: ${dateTime.toLocaleDateString()}\n
+        Time: ${dateTime.toLocaleTimeString()}\n
+        Estimated Duration: ${service.duration} minutes\n
+        Price: $${service.price.toFixed(2)}`
+      );
+
+      // Clear form
       setFormData({
         vehicle: '',
         service: '',
@@ -69,12 +118,11 @@ const AppointmentForm = () => {
         notes: ''
       });
 
-      // Redirect to appointments list after 2 seconds
-      setTimeout(() => {
-        navigate('/appointments');
-      }, 2000);
+      // Do not redirect automatically during testing — stay on this page so user can see confirmation
+      // (If you want to go to another page after a delay, uncomment the navigate call below.)
+      // setTimeout(() => navigate('/appointments'), 2000);
     } catch (err) {
-      setError(err.response?.data?.msg || 'Failed to book appointment');
+      setError(err.message || 'Failed to book appointment. Please try again.');
       console.error('Error booking appointment:', err);
     } finally {
       setLoading(false);
@@ -110,9 +158,9 @@ const AppointmentForm = () => {
             className="w-full p-2 border rounded"
           >
             <option value="">Select a vehicle</option>
-            {vehicles.map(vehicle => (
-              <option key={vehicle._id} value={vehicle._id}>
-                {vehicle.make} {vehicle.model} ({vehicle.year})
+            {vehicleOptions.map(vehicle => (
+              <option key={vehicle.id} value={vehicle.id}>
+                {vehicle.name}
               </option>
             ))}
           </select>
@@ -128,9 +176,9 @@ const AppointmentForm = () => {
             className="w-full p-2 border rounded"
           >
             <option value="">Select a service</option>
-            {services.map(service => (
-              <option key={service._id} value={service._id}>
-                {service.name} - ${service.price}
+            {serviceOptions.map(service => (
+              <option key={service.id} value={service.id}>
+                {service.name} - ${service.price.toFixed(2)} ({service.duration} mins)
               </option>
             ))}
           </select>

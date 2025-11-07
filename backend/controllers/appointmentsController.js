@@ -31,10 +31,10 @@ exports.getAppointment = async (req, res) => {
   }
 };
 
+// Create appointment (DB-backed)
 exports.createAppointment = async (req, res) => {
   try {
-    // Add the user ID from the token to the appointment
-    const appointment = await Appointment.create({
+    const payload = {
       ...req.body,
       user: req.user.id,
     });
@@ -68,7 +68,7 @@ exports.createAppointment = async (req, res) => {
       )
     );
 
-    // Send confirmation email
+    // Send confirmation email (best effort)
     try {
       await emailService.sendAppointmentConfirmation(
         req.user.email,
@@ -86,10 +86,12 @@ exports.createAppointment = async (req, res) => {
 
     return res.status(201).json(populatedAppointment);
   } catch (err) {
+    console.error('Error getting appointment:', err);
     return res.status(500).json({ msg: err.message });
   }
 };
 
+// Update
 exports.updateAppointment = async (req, res) => {
   try {
     const item = await Appointment.findByIdAndUpdate(req.params.id, req.body, {
@@ -98,16 +100,19 @@ exports.updateAppointment = async (req, res) => {
     if (!item) return res.status(404).json({ msg: "Appointment not found" });
     return res.json(item);
   } catch (err) {
+    console.error('Error updating appointment:', err);
     return res.status(500).json({ msg: err.message });
   }
 };
 
+// Delete
 exports.deleteAppointment = async (req, res) => {
   try {
     const item = await Appointment.findByIdAndDelete(req.params.id);
-    if (!item) return res.status(404).json({ msg: "Appointment not found" });
-    return res.json({ msg: "Appointment deleted" });
+    if (!item) return res.status(404).json({ msg: 'Appointment not found' });
+    return res.json({ msg: 'Appointment deleted' });
   } catch (err) {
+    console.error('Error deleting appointment:', err);
     return res.status(500).json({ msg: err.message });
   }
 };
