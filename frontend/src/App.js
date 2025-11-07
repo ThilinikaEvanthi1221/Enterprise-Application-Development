@@ -28,6 +28,7 @@ import Profile from "./pages/Profile";
 
 // Service Request Components
 import CustomerServiceRequests from "./pages/CustomerServiceRequests";
+import MyServices from "./pages/MyServices";
 import EmployeeServiceManagement from "./pages/EmployeeServiceManagement";
 import AdminServiceManagement from "./pages/AdminServiceManagement";
 
@@ -100,6 +101,14 @@ function App() {
           element={
             <PrivateRoute allowedRoles={["customer"]}>
               <CustomerServiceRequests />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/customer/my-services"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <MyServices />
             </PrivateRoute>
           }
         />

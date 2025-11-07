@@ -13,21 +13,12 @@ import {
 } from "recharts";
 import Layout from "../components/Layout";
 import MetricCard from "../components/MetricCard";
-import { getDashboardMetrics } from "../services/api";
+import AppointmentStore from "../utils/AppointmentStore";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // Appointments chart data
-  const appointmentsData = [
-    { month: "Jan", total: 45, completed: 38 },
-    { month: "Feb", total: 52, completed: 46 },
-    { month: "Mar", total: 48, completed: 42 },
-    { month: "Apr", total: 61, completed: 55 },
-    { month: "May", total: 58, completed: 52 },
-    { month: "Jun", total: 65, completed: 60 },
-    { month: "Jul", total: 72, completed: 68 },
-  ];
+  const [appointmentsData, setAppointmentsData] = useState([]);
 
   // Time Logs weekly data
   const timeLogsData = [
@@ -51,37 +42,112 @@ const Dashboard = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    let isMounted = true;
     const loadData = async () => {
       try {
-        const { data } = await getDashboardMetrics();
-        if (isMounted && data && data.totals) {
-          setTotals(data.totals);
-          setError("");
-        }
-      } catch (e) {
-        if (isMounted) {
-          if (e.response?.status === 401) {
-            setError("Unauthorized. Please login again.");
-            // Clear invalid token and redirect to login
-            localStorage.removeItem("token");
-            window.location.href = "/login";
-          } else {
-            setError(
-              "Failed to load dashboard metrics: " +
-                (e.response?.data?.msg || e.message)
-            );
+        // Get appointments from store
+        const appointments = AppointmentStore.getAppointments();
+
+        // Calculate appointment stats
+        const appointmentStats = AppointmentStore.getStats();
+
+        // Fetch other data from API
+        const token = localStorage.getItem("token");
+        const [usersRes, vehiclesRes, servicesRes, timeLogsRes] =
+          await Promise.all([
+            fetch("http://localhost:5000/api/users", {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then((res) => res.json())
+              .catch(() => []),
+            fetch("http://localhost:5000/api/vehicles", {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then((res) => res.json())
+              .catch(() => ({ vehicles: [] })),
+            fetch("http://localhost:5000/api/services", {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then((res) => res.json())
+              .catch(() => []),
+            fetch("http://localhost:5000/api/time-logs", {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then((res) => res.json())
+              .catch(() => []),
+          ]);
+
+        console.log("API Responses:", {
+          usersRes,
+          vehiclesRes,
+          servicesRes,
+          timeLogsRes,
+        });
+
+        const usersCount = Array.isArray(usersRes) ? usersRes.length : 0;
+        const vehiclesCount = vehiclesRes?.vehicles
+          ? Array.isArray(vehiclesRes.vehicles)
+            ? vehiclesRes.vehicles.length
+            : 0
+          : Array.isArray(vehiclesRes)
+          ? vehiclesRes.length
+          : 0;
+        const servicesCount = Array.isArray(servicesRes)
+          ? servicesRes.length
+          : 0;
+        const appointmentsCount = appointmentStats.total || 0;
+        const timeLogsCount = Array.isArray(timeLogsRes)
+          ? timeLogsRes.length
+          : 0;
+
+        console.log("Counts:", {
+          usersCount,
+          vehiclesCount,
+          servicesCount,
+          appointmentsCount,
+          timeLogsCount,
+        });
+
+        setTotals({
+          users: usersCount,
+          vehicles: vehiclesCount,
+          services: servicesCount,
+          appointments: appointmentsCount,
+          timeLogs: timeLogsCount,
+        });
+
+        // Generate monthly data
+        const monthlyData = appointments.reduce((acc, apt) => {
+          const date = new Date(apt.dateTime);
+          const month = date.toLocaleString("default", { month: "short" });
+
+          if (!acc[month]) {
+            acc[month] = { total: 0, completed: 0 };
           }
-        }
+
+          acc[month].total++;
+          if (apt.status === "completed") {
+            acc[month].completed++;
+          }
+
+          return acc;
+        }, {});
+
+        // Convert to array format for charts
+        const chartData = Object.entries(monthlyData).map(([month, data]) => ({
+          month,
+          ...data,
+        }));
+
+        setAppointmentsData(chartData);
+        setError("");
+      } catch (e) {
+        setError("Failed to load dashboard metrics: " + e.message);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
     loadData();
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   if (loading) {
@@ -130,46 +196,27 @@ const Dashboard = () => {
           >
             + Add New Employee
           </button>
-          <button
-            onClick={() => navigate("/admin-services")}
-            style={{
-              padding: "12px 24px",
-              background: "#7c3aed",
-              color: "white",
-              fontSize: "16px",
-              fontWeight: "600",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            }}
-            onMouseEnter={(e) => (e.target.style.background = "#6d28d9")}
-            onMouseLeave={(e) => (e.target.style.background = "#7c3aed")}
-          >
-            🔧 Manage Service Requests
-          </button>
         </div>
 
         {/* Metric Cards - Top Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
           <MetricCard
             title="Total Users"
-            value={String(totals.users)}
+            value={String(totals.users || 0)}
             change="+5.2%"
             trend="up"
             iconType="👥"
           />
           <MetricCard
             title="Total Vehicles"
-            value={String(totals.vehicles)}
+            value={String(totals.vehicles || 0)}
             change="+2.1%"
             trend="up"
             iconType="🚗"
           />
           <MetricCard
             title="Total Appointments"
-            value={String(totals.appointments)}
+            value={String(totals.appointments || 0)}
             change="+12.5%"
             trend="up"
             iconType="📅"
@@ -180,14 +227,14 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <MetricCard
             title="Total Services"
-            value={String(totals.services)}
+            value={String(totals.services || 0)}
             change="+3.0%"
             trend="up"
             iconType="🔧"
           />
           <MetricCard
             title="Hours Logged"
-            value={String(totals.timeLogs)}
+            value={String(totals.timeLogs || 0)}
             change="+8.2%"
             trend="up"
             iconType="⏱️"
