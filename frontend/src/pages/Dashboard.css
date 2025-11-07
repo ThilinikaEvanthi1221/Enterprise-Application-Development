@@ -642,3 +642,214 @@
     width: 200px;
   }
 }
+.profile-layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  padding: 24px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.profile-left,
+.profile-right {
+  min-width: 0;
+}
+
+@media (max-width: 960px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .profile-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+  }
+
+  .profile-email {
+    width: 100%;
+  }
+
+  .profile-email span {
+    word-wrap: break-word;
+    font-size: 1rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem;
+  }
+
+  .profile-layout {
+    padding: 12px;
+  }
+
+  .vehicle-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .vehicle-meta {
+    font-size: 0.85rem;
+  }
+
+  .vehicle-plate {
+    font-size: 1rem;
+  }
+}
+
+.vehicle-lookup {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.vehicle-list {
+  display: grid;
+  gap: 12px;
+}
+
+.vehicle-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 12px;
+  border: 1px solid #e7e7e9;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.vehicle-plate {
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.vehicle-meta {
+  grid-column: 1 / -1;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.tag-green {
+  background: #e9fbef;
+  color: #207a3d;
+}
+
+.tag-gray {
+  background: #f1f1f3;
+  color: #555;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 12px 0 16px;
+}
+
+.muted {
+  color: #777;
+}
+
+.error-text {
+  color: #b00020;
+  margin-bottom: 8px;
+}
+
+.dashboard-container.profile-page {
+  background-color: #1a56db;
+  min-height: 100vh;
+  padding-left: 260px;
+}
+
+.profile-page .main-content {
+  margin-left: 0 !important;
+  padding: 32px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-left .auth-card,
+.profile-right .auth-card {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .dashboard-container.profile-page {
+    padding-left: 80px;
+  }
+}
+
+.profile-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* make overlay visible when hovering the avatar */
+.profile-avatar:hover .avatar-hover-overlay {
+  opacity: 1;
+}
+
+/* Profile left container improvements */
+.section {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  margin-top: 16px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+.form-grid.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .form-grid.two {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Make avatar overlay show on hover (desktop) */
+.profile-avatar:hover .avatar-hover-overlay {
+  opacity: 1;
+}

@@ -182,17 +182,15 @@ export default function CustomerDashboard() {
     },
   };
 
-  const menuItems = [
-    {
-      name: "📅 Book an Appointment",
-      path: "/customer-service-requests",
-      icon: "📅",
-    },
-    { name: "🔧 My Services", path: "/customer/my-services", icon: "🔧" },
-    { name: "🚗 My Vehicles", path: "/customer/vehicles", icon: "🚗" },
-    { name: "📋 Service History", path: "/customer/history", icon: "📋" },
-    { name: "👤 My Profile", path: "/profile", icon: "👤" },
-  ];
+const menuItems = [
+  { name: "📅 Book an Appointment", path: "/customer-service-requests", icon: "📅" },
+  { name: "🔧 My Services", path: "/customer/my-services", icon: "🔧" },
+  { name: "🚗 My Vehicles", path: "/customer/vehicles", icon: "🚗" },
+  { name: "📋 Service History", path: "/customer/history", icon: "📋" },
+  { name: "👤 My Profile", path: "/customer/profile", icon: "👤" },
+];
+
+  
 
   return (
     <div style={styles.container}>
