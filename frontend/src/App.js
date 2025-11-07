@@ -24,6 +24,7 @@ import ChatBot from "./pages/ChatBot";
 
 // Service Request Components
 import CustomerServiceRequests from "./pages/CustomerServiceRequests";
+import MyServices from "./pages/MyServices";
 import EmployeeServiceManagement from "./pages/EmployeeServiceManagement";
 import AdminServiceManagement from "./pages/AdminServiceManagement";
 
@@ -96,6 +97,14 @@ function App() {
           }
         />
         <Route
+          path="/customer/my-services"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <MyServices />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/employee-services"
           element={
             <PrivateRoute allowedRoles={["employee"]}>
@@ -161,7 +170,7 @@ function App() {
             </PrivateRoute>
           }
         />
-        
+
         {/* Additional routes from Employee-dashboard branch */}
         <Route
           path="/bookings"
