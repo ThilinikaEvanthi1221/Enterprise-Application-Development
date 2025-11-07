@@ -13,21 +13,12 @@ import {
 } from "recharts";
 import Layout from "../components/Layout";
 import MetricCard from "../components/MetricCard";
-import { getDashboardMetrics } from "../services/api";
+import AppointmentStore from "../utils/AppointmentStore";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  // Appointments chart data
-  const appointmentsData = [
-    { month: "Jan", total: 45, completed: 38 },
-    { month: "Feb", total: 52, completed: 46 },
-    { month: "Mar", total: 48, completed: 42 },
-    { month: "Apr", total: 61, completed: 55 },
-    { month: "May", total: 58, completed: 52 },
-    { month: "Jun", total: 65, completed: 60 },
-    { month: "Jul", total: 72, completed: 68 },
-  ];
+  const [appointmentsData, setAppointmentsData] = useState([]);
 
   // Time Logs weekly data
   const timeLogsData = [
@@ -51,37 +42,54 @@ const Dashboard = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    let isMounted = true;
-    const loadData = async () => {
+    const loadData = () => {
       try {
-        const { data } = await getDashboardMetrics();
-        if (isMounted && data && data.totals) {
-          setTotals(data.totals);
-          setError("");
-        }
-      } catch (e) {
-        if (isMounted) {
-          if (e.response?.status === 401) {
-            setError("Unauthorized. Please login again.");
-            // Clear invalid token and redirect to login
-            localStorage.removeItem("token");
-            window.location.href = "/login";
-          } else {
-            setError(
-              "Failed to load dashboard metrics: " +
-                (e.response?.data?.msg || e.message)
-            );
+        // Get appointments from store
+        const appointments = AppointmentStore.getAppointments();
+        
+        // Calculate totals
+        const appointmentStats = AppointmentStore.getStats();
+        
+        setTotals({
+          appointments: appointmentStats.total,
+          pending: appointmentStats.pending,
+          active: appointmentStats.active,
+          completed: appointmentStats.completed
+        });
+
+        // Generate monthly data
+        const monthlyData = appointments.reduce((acc, apt) => {
+          const date = new Date(apt.dateTime);
+          const month = date.toLocaleString('default', { month: 'short' });
+          
+          if (!acc[month]) {
+            acc[month] = { total: 0, completed: 0 };
           }
-        }
+          
+          acc[month].total++;
+          if (apt.status === 'completed') {
+            acc[month].completed++;
+          }
+          
+          return acc;
+        }, {});
+
+        // Convert to array format for charts
+        const chartData = Object.entries(monthlyData).map(([month, data]) => ({
+          month,
+          ...data
+        }));
+
+        setAppointmentsData(chartData);
+        setError("");
+      } catch (e) {
+        setError("Failed to load dashboard metrics: " + e.message);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
     loadData();
-    return () => {
-      isMounted = false;
-    };
   }, []);
 
   if (loading) {

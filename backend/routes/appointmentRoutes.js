@@ -1,14 +1,19 @@
 const express = require("express");
 const { verifyToken, requireAdmin } = require("../middleware/authMiddleware");
-const { listAppointments, getAppointment, createAppointment, updateAppointment, deleteAppointment } = require("../controllers/appointmentsController");
+const appointmentsController = require("../controllers/appointmentsController");
 
 const router = express.Router();
 
+// Public routes (no auth required)
+router.post('/check-availability', appointmentsController.checkAvailability);
+
+// Protected routes (require authentication)
 router.use(verifyToken);
 
-// Customer routes (no admin required)
-router.post("/", createAppointment);
-router.get("/my", listAppointments); // Customer's own appointments
+// Customer routes
+router.get('/my', appointmentsController.myAppointments); // Customer's own appointments
+router.post('/', appointmentsController.createAppointment); // Create new appointment
+router.post('/confirm', appointmentsController.confirmAppointment); // Confirm appointment
 
 // Admin routes
 router.use(requireAdmin);

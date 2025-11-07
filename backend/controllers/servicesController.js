@@ -1,10 +1,60 @@
-const Service = require("../models/service");
+const Serviceexportsconst ServiceType = require('../models/serviceType');
+
+/**
+ * PUBLIC FUNCTIONS
+ */
+
+// Public: List all available service types
+exports.listAvailableServices = async (req, res) => {
+  try {
+    // Find all active service types
+    const services = await ServiceType.find({ isActive: true })
+      .select('name description price duration category');
+
+    res.json(services);
+  } catch (error) {
+    console.error('Error fetching available services:', error);
+    res.status(500).json({ message: 'Error fetching available services' });
+  }
+};ces = async (req, res) => {
+  try {
+    const ServiceType = require('../models/serviceType');
+    // Find all active service types
+    const services = await ServiceType.find({ isActive: true })
+      .select('name description price duration category');
+
+    res.json(services);
+  } catch (error) {
+    console.error('Error fetching available services:', error);
+    res.status(500).json({ message: 'Error fetching available services' });
+  }
+};/models/service");
 const Vehicle = require("../models/vehicle");
 const User = require("../models/user");
 const {
   estimateServiceCost,
   calculateActualCost,
 } = require("../utils/costEstimator");
+
+/**
+ * PUBLIC FUNCTIONS
+ */
+
+// Public: List all available service types
+exports.listAvailableServices = async (req, res) => {
+  try {
+    // Find all active services that can be booked
+    const services = await Service.find({
+      isActive: true,
+      // Add any other conditions that define an "available" service
+    }).select("name description price duration category");
+
+    res.json(services);
+  } catch (error) {
+    console.error("Error fetching available services:", error);
+    res.status(500).json({ message: "Error fetching available services" });
+  }
+};
 
 /**
  * CUSTOMER FUNCTIONS

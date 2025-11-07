@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { getDashboardStats } from "../services/api";
+import AppointmentStore from "../utils/AppointmentStore";
 import Bookings from "./Bookings";
 import Customers from "./Customers";
 import Staff from "./Staff";
@@ -23,6 +24,9 @@ export default function EmployeeDashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const location = useLocation();
   const navigate = useNavigate();
+  // Notifications (pulled from in-memory store for testing)
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     // Check if user is logged in
@@ -64,6 +68,30 @@ export default function EmployeeDashboard() {
 
     fetchDashboardData();
   }, [navigate]);
+
+  // Poll appointment store for notifications so employees see them in near-real-time
+  useEffect(() => {
+    const updateNotifications = () => {
+      try {
+        const notifs = AppointmentStore.getNotifications();
+        setNotifications(notifs.slice().reverse()); // show newest first
+        setUnreadCount(AppointmentStore.getUnreadCount());
+      } catch (e) {
+        console.error('Failed to load notifications from store', e);
+      }
+    };
+
+    updateNotifications();
+    const iv = setInterval(updateNotifications, 2000);
+    // Also listen for storage events so cross-tab updates appear immediately
+    const onStorage = (e) => {
+      if (e.key === '__notifications' || e.key === '__appointments') {
+        updateNotifications();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => { clearInterval(iv); window.removeEventListener('storage', onStorage); };
+  }, []);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -292,7 +320,15 @@ export default function EmployeeDashboard() {
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              <div className="notification-icon">
+              <div
+                className="notification-icon"
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate('/employee/notifications')}
+                onKeyDown={(e) => { if (e.key === 'Enter') navigate('/employee/notifications'); }}
+                style={{ cursor: 'pointer' }}
+                aria-label="Open notifications"
+              >
                 <svg
                   className="icon"
                   fill="none"
@@ -306,7 +342,8 @@ export default function EmployeeDashboard() {
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                   />
                 </svg>
-                <span className="notification-dot"></span>
+                {/* show unread count; simple dot when zero shows nothing */}
+                <span className="notification-dot">{unreadCount > 0 ? unreadCount : ''}</span>
               </div>
             </div>
             <div className="user-profile">
@@ -330,7 +367,8 @@ export default function EmployeeDashboard() {
           <Route path="/staff" element={<Staff />} />
           <Route path="/inventory" element={<InventoryDashboard />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/parts" element={<PartsManagement />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+           <Route path="/parts" element={<PartsManagement />} />
           <Route path="/stock-adjustment" element={<StockAdjustment />} />
         </Routes>
       </main>
@@ -531,4 +569,55 @@ function DashboardHome({ stats, formatDate, getStatusColor }) {
         </div>
       </>
     );
+}
+
+// Notifications Page for employees (reads from AppointmentStore)
+function NotificationsPage() {
+  const [list, setList] = React.useState([]);
+
+  const reload = () => {
+    const nots = AppointmentStore.getNotifications().slice().reverse();
+    setList(nots);
+  };
+
+  React.useEffect(() => {
+    reload();
+    const iv = setInterval(reload, 2000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const markRead = (id) => {
+    AppointmentStore.markNotificationAsRead(id);
+    reload();
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Notifications</h2>
+      {list.length === 0 ? (
+        <div>No notifications</div>
+      ) : (
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {list.map(n => (
+            <li key={n.id} style={{ borderBottom: '1px solid #eee', padding: '12px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>
+                  <strong>{n.title || n.type}</strong>
+                  <div style={{ color: '#666' }}>{n.message}</div>
+                  <div style={{ fontSize: 12, color: '#999' }}>{new Date(n.createdAt).toLocaleString()}</div>
+                </div>
+                <div style={{ marginLeft: 12 }}>
+                  {!n.read && (
+                    <button onClick={() => markRead(n.id)} style={{ background: '#2563eb', color: 'white', padding: '6px 8px', borderRadius: 4, border: 'none' }}>
+                      Mark read
+                    </button>
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
