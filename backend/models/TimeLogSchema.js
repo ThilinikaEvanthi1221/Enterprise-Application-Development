@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const timeLogSchema = new mongoose.Schema(
   {
@@ -27,17 +27,11 @@ const timeLogSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: [
-        "not-started",
-        "in-progress",
-        "on-hold",
-        "completed",
-        "delayed",
-      ],
+      enum: ["not-started", "in-progress", "on-hold", "completed", "delayed"],
       required: true,
     },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("TimeLog", timeLogSchema);
+module.exports = mongoose.model("TimeLog", timeLogSchema);
