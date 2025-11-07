@@ -7,19 +7,11 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState("week"); // day | week | month | year
-  const [user, setUser] = useState(null);
-
   useEffect(() => {
     // Set user info
     const token = localStorage.getItem("token");
     if (token) {
-      try {
-        const tokenParts = token.split(".");
-        const payload = JSON.parse(atob(tokenParts[1]));
-        setUser({ name: "Jason Miller", role: payload.role || "employee" });
-      } catch (e) {
-        console.error("Error decoding token:", e);
-      }
+      // Token available, user is authenticated
     }
 
     // Fetch bookings

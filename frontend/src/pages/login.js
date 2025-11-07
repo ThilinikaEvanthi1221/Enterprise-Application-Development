@@ -276,9 +276,9 @@ export default function Login() {
                   />
                   <span style={styles.checkboxText}>Remember me</span>
                 </label>
-                <a href="#" style={styles.forgotLink}>
+                <button type="button" onClick={() => {}} style={{...styles.forgotLink, background: 'none', border: 'none', padding: 0, cursor: 'pointer'}}>
                   Forgot Password?
-                </a>
+                </button>
               </div>
 
               <button

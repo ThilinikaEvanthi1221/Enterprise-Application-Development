@@ -126,7 +126,7 @@ const InventoryDashboard = () => {
     );
   }
 
-  const { summary, recentTransactions, stockByCategory } = dashboardData || {};
+  const { summary, stockByCategory } = dashboardData || {};
 
   return (
     <div className="inventory-dashboard">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link, Routes, Route, NavLink, useLocation } from "react-router-dom";
+import { useNavigate, Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { getDashboardStats } from "../services/api";
 import Bookings from "./Bookings";
 import Customers from "./Customers";
@@ -18,9 +18,7 @@ export default function EmployeeDashboard() {
     recentBookings: [],
     changes: { projects: 0, services: 0, completed: 0 },
   });
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [currentPage, setCurrentPage] = useState("dashboard");
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -48,7 +46,6 @@ export default function EmployeeDashboard() {
     // Fetch dashboard data
     const fetchDashboardData = async () => {
       try {
-        setLoading(true);
         const response = await getDashboardStats();
         setStats(response.data);
       } catch (error) {
@@ -57,8 +54,6 @@ export default function EmployeeDashboard() {
           localStorage.removeItem("token");
           navigate("/login");
         }
-      } finally {
-        setLoading(false);
       }
     };
 
