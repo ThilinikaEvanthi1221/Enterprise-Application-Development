@@ -1,6 +1,7 @@
 const Service = require("../models/service");
 const Vehicle = require("../models/vehicle");
 const User = require("../models/user");
+const Appointment = require("../models/appointment");
 const {
   estimateServiceCost,
   calculateActualCost,
@@ -22,6 +23,9 @@ exports.requestService = async (req, res) => {
       laborHours,
       partsRequired,
       customerNotes,
+      scheduledDate,
+      timeSlot,
+      appointmentNotes,
     } = req.body;
 
     // Validate required fields
@@ -29,6 +33,13 @@ exports.requestService = async (req, res) => {
       return res
         .status(400)
         .json({ msg: "Service type, name, and vehicle are required" });
+    }
+
+    // Validate appointment is required
+    if (!scheduledDate || !timeSlot) {
+      return res
+        .status(400)
+        .json({ msg: "Appointment date and time slot are required" });
     }
 
     // Verify vehicle belongs to customer
@@ -40,6 +51,26 @@ exports.requestService = async (req, res) => {
       return res
         .status(403)
         .json({ msg: "You can only request services for your own vehicles" });
+    }
+
+    // Parse time slot to get the start time
+    const timeSlotStart = timeSlot.split(" - ")[0]; // e.g., "10:00 AM"
+    const [time, period] = timeSlotStart.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    // Convert to 24-hour format
+    if (period === "PM" && hours !== 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+
+    // Combine date and time
+    const appointmentDateTime = new Date(scheduledDate);
+    appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+    // Check if appointment is in the past
+    if (appointmentDateTime < new Date()) {
+      return res
+        .status(400)
+        .json({ msg: "Cannot schedule appointments in the past" });
     }
 
     // Calculate estimated cost
@@ -63,6 +94,21 @@ exports.requestService = async (req, res) => {
       status: "requested",
     });
 
+    // Create appointment (now mandatory)
+    const appointment = await Appointment.create({
+      user: customerId,
+      vehicle: vehicleId,
+      service: service._id,
+      scheduledAt: appointmentDateTime,
+      status: "scheduled",
+      notes: appointmentNotes || `${name} - ${timeSlot}`,
+    });
+
+    await appointment.populate([
+      { path: "user", select: "name email" },
+      { path: "vehicle", select: "make model year plateNumber" },
+    ]);
+
     // Populate vehicle and customer info
     await service.populate([
       { path: "customer", select: "name email" },
@@ -71,6 +117,7 @@ exports.requestService = async (req, res) => {
 
     return res.status(201).json({
       service,
+      appointment,
       costEstimate,
     });
   } catch (err) {

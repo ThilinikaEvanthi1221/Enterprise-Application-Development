@@ -149,13 +149,15 @@ export default function CustomerDashboard() {
   };
 
   const menuItems = [
-    { name: "My Service Requests", path: "/customer-service-requests" },
-    { name: "Book Appointment", path: "/customer/book-appointment" },
-    { name: "My Appointments", path: "/customer/appointments" },
-    { name: "My Vehicles", path: "/customer/vehicles" },
-    { name: "Available Services", path: "/customer/services" },
-    { name: "Service History", path: "/customer/history" },
-    { name: "My Profile", path: "/customer/profile" },
+    {
+      name: "📅 Book an Appointment",
+      path: "/customer-service-requests",
+      icon: "📅",
+    },
+    { name: "🔧 My Services", path: "/customer/my-services", icon: "🔧" },
+    { name: "🚗 My Vehicles", path: "/customer/vehicles", icon: "🚗" },
+    { name: "📋 Service History", path: "/customer/history", icon: "📋" },
+    { name: "👤 My Profile", path: "/customer/profile", icon: "👤" },
   ];
 
   return (
