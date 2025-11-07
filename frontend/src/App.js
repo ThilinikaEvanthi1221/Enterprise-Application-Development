@@ -1,26 +1,36 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom"; // ✅ Added Navigate import
+
 import PrivateRoute from "./components/PrivateRoute";
+
+// Public Pages
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
-import Dashboard from "./pages/Dashboard";
-import Bookings from "./pages/Bookings";
-import Customers from "./pages/Customers";
-import Staff from "./pages/Staff";
+import Unauthorized from "./pages/Unauthorized";
 
+// Common Dashboards
+import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
-import Unauthorized from "./pages/Unauthorized";
-import AddEmployee from "./pages/AddEmployee";
 
+// Management Pages
+import AddEmployee from "./pages/AddEmployee";
 import Users from "./pages/Users";
 import Appointments from "./pages/Appointments";
 import Services from "./pages/Services";
 import Vehicles from "./pages/Vehicles";
 import TimeLogs from "./pages/TimeLogs";
 import ChatBot from "./pages/ChatBot";
+import Bookings from "./pages/Bookings";
+import Customers from "./pages/Customers";
+import Staff from "./pages/Staff";
 
 // Service Request Components
 import CustomerServiceRequests from "./pages/CustomerServiceRequests";
@@ -31,14 +41,13 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
+        {/* 🌐 Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
         <Route path="/unauthorized" element={<Unauthorized />} />
 
-        {/* Dashboard - Redirects to role-specific dashboard */}
+        {/* 🔒 Protected Dashboard Redirect */}
         <Route
           path="/dashboard"
           element={
@@ -48,7 +57,7 @@ function App() {
           }
         />
 
-        {/* Admin Routes */}
+        {/* 🧭 Admin Routes */}
         <Route
           path="/admin/*"
           element={
@@ -65,41 +74,11 @@ function App() {
             </PrivateRoute>
           }
         />
-
-        {/* Employee Routes */}
         <Route
-          path="/employee/*"
+          path="/staff"
           element={
-            <PrivateRoute allowedRoles={["employee"]}>
-              <EmployeeDashboard />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Customer Routes */}
-        <Route
-          path="/customer/*"
-          element={
-            <PrivateRoute allowedRoles={["customer"]}>
-              <CustomerDashboard />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Service Request Routes */}
-        <Route
-          path="/customer-service-requests"
-          element={
-            <PrivateRoute allowedRoles={["customer"]}>
-              <CustomerServiceRequests />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/employee-services"
-          element={
-            <PrivateRoute allowedRoles={["employee"]}>
-              <EmployeeServiceManagement />
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Staff />
             </PrivateRoute>
           }
         />
@@ -112,7 +91,59 @@ function App() {
           }
         />
 
-        {/* Legacy Routes */}
+        {/* 👷 Employee Routes */}
+        <Route
+          path="/employee/*"
+          element={
+            <PrivateRoute allowedRoles={["employee"]}>
+              <EmployeeDashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/employee-services"
+          element={
+            <PrivateRoute allowedRoles={["employee"]}>
+              <EmployeeServiceManagement />
+            </PrivateRoute>
+          }
+        />
+
+        {/* 👤 Customer Routes */}
+        <Route
+          path="/customer/*"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <CustomerDashboard />
+            </PrivateRoute>
+          }
+        />
+
+        {/* 🧾 Customer Service Requests / Booking Page (use existing component for both paths) */}
+        <Route
+          path="/customer/service-requests"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <CustomerServiceRequests />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/customer/service-request"
+          element={
+            <PrivateRoute allowedRoles={["customer"]}>
+              <CustomerServiceRequests />
+            </PrivateRoute>
+          }
+        />
+
+        {/* 🔁 Redirect root to Customer Dashboard */}
+        <Route
+          path="/"
+          element={<Navigate to="/customer/dashboard" replace />}
+        />
+
+        {/* 🧩 Legacy / Shared Routes */}
         <Route
           path="/users"
           element={
@@ -161,8 +192,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        
-        {/* Additional routes from Employee-dashboard branch */}
         <Route
           path="/bookings"
           element={
@@ -179,12 +208,14 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* 🚫 404 Fallback */}
         <Route
-          path="/staff"
+          path="*"
           element={
-            <PrivateRoute allowedRoles={["admin"]}>
-              <Staff />
-            </PrivateRoute>
+            <h1 className="text-center mt-10 text-red-600">
+              404 - Page Not Found
+            </h1>
           }
         />
       </Routes>

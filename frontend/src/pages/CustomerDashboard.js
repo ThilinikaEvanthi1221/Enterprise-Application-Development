@@ -1,265 +1,94 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import AppointmentForm from "../components/appointments/AppointmentForm";
-import API from "../services/api";
+import CustomerNavbar from "../components/layout/CustomerNavbar";
+import CustomerSidebar from "../components/layout/CustomerSidebar";
+import DashboardStats from "../components/layout/DashboardStats";
+import QuickActions from "../components/layout/QuickActions";
+import UpcomingAppointments from "../components/layout/UpcomingAppointments";
+import RecentActivity from "../components/layout/RecentActivity";
 
 export default function CustomerDashboard() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState({});
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [services, setServices] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user") || "{}");
-    setUser(userData);
-    fetchAppointments();
+    const fetchServices = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          "http://localhost:5000/api/services/my-services",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setServices(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error fetching services:", err);
+        setError("Failed to fetch service requests");
+      }
+    };
+
+    fetchServices();
   }, []);
 
-  const fetchAppointments = async () => {
-    try {
-      const response = await API.get('/appointments/my');
-      setAppointments(response.data);
-    } catch (err) {
-      setError('Failed to fetch appointments');
-      console.error('Error fetching appointments:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
-  const styles = {
-    container: {
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
+  // Calculate stats based on service status
+  const stats = [
+    {
+      label: "Active Appointments",
+      value: services.filter(
+        (s) => s.status === "approved" || s.status === "ongoing"
+      ).length,
+      subtext: "Confirmed",
     },
-    header: {
-      background: "white",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      padding: "16px 32px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
+    {
+      label: "Pending Approval",
+      value: services.filter(
+        (s) => s.status === "requested" || s.status === "pending"
+      ).length,
+      subtext: "Awaiting",
     },
-    title: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      color: "#1e3a8a",
+    {
+      label: "In Progress",
+      value: services.filter((s) => s.status === "ongoing").length,
+      subtext: "Active now",
     },
-    userInfo: {
-      display: "flex",
-      alignItems: "center",
-      gap: "16px",
+    {
+      label: "Completed Services",
+      value: services.filter((s) => s.status === "completed").length,
+      subtext: "All time",
     },
-    badge: {
-      background: "#7c3aed",
-      color: "white",
-      padding: "4px 12px",
-      borderRadius: "12px",
-      fontSize: "12px",
-      fontWeight: "600",
-    },
-    logoutBtn: {
-      background: "#2563eb",
-      color: "white",
-      border: "none",
-      padding: "8px 16px",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontWeight: "600",
-    },
-    content: {
-      padding: "32px",
-      maxWidth: "1200px",
-      margin: "0 auto",
-    },
-    card: {
-      background: "white",
-      borderRadius: "16px",
-      padding: "24px",
-      marginBottom: "24px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-    },
-    cardTitle: {
-      fontSize: "20px",
-      fontWeight: "bold",
-      color: "#1f2937",
-      marginBottom: "16px",
-    },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-      gap: "16px",
-      marginBottom: "24px",
-    },
-    statCard: {
-      background: "white",
-      borderRadius: "12px",
-      padding: "20px",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      borderLeft: "4px solid #7c3aed",
-    },
-    statLabel: {
-      color: "#6b7280",
-      fontSize: "14px",
-      marginBottom: "8px",
-    },
-    statValue: {
-      fontSize: "32px",
-      fontWeight: "bold",
-      color: "#1f2937",
-    },
-    menuList: {
-      listStyle: "none",
-      padding: 0,
-    },
-    menuItem: {
-      padding: "12px 16px",
-      marginBottom: "8px",
-      background: "#f3f4f6",
-      borderRadius: "8px",
-      cursor: "pointer",
-      transition: "all 0.2s",
-    },
-  };
-
-  const menuItems = [
-    { name: "My Service Requests", path: "/customer-service-requests" },
-    { name: "Book Appointment", path: "/customer/book-appointment" },
-    { name: "My Appointments", path: "/customer/appointments" },
-    { name: "My Vehicles", path: "/customer/vehicles" },
-    { name: "Available Services", path: "/customer/services" },
-    { name: "Service History", path: "/customer/history" },
-    { name: "My Profile", path: "/customer/profile" },
   ];
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>Customer Dashboard</h1>
-        <div style={styles.userInfo}>
-          <span style={styles.badge}>CUSTOMER</span>
-          <span>{user.name}</span>
-          <button
-            style={styles.logoutBtn}
-            onClick={handleLogout}
-            onMouseEnter={(e) => (e.target.style.background = "#1d4ed8")}
-            onMouseLeave={(e) => (e.target.style.background = "#2563eb")}
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+    <div className="flex h-screen bg-gray-50">
+      <CustomerSidebar />
+      <div className="flex-1 flex flex-col">
+        <CustomerNavbar />
+        <main className="p-6 overflow-y-auto">
+          {/* Dashboard Stats Section */}
+          <DashboardStats stats={stats} />
 
-      <div style={styles.content}>
-        <div style={styles.grid}>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Active Appointments</div>
-            <div style={styles.statValue}>
-              {loading ? '--' : appointments.filter(a => a.status === 'confirmed').length}
-            </div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Pending Appointments</div>
-            <div style={styles.statValue}>
-              {loading ? '--' : appointments.filter(a => a.status === 'pending').length}
-            </div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Completed Services</div>
-            <div style={styles.statValue}>
-              {loading ? '--' : appointments.filter(a => a.status === 'completed').length}
-            </div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statLabel}>Total Appointments</div>
-            <div style={styles.statValue}>
-              {loading ? '--' : appointments.length}
-            </div>
-          </div>
-        </div>
+          {/* Quick Actions */}
+          <QuickActions />
 
-        <div style={styles.card}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '20px'
-          }}>
-            <h2 style={styles.cardTitle}>{activeTab === 'book' ? 'Book Appointment' : 'Quick Actions'}</h2>
-            {activeTab !== 'book' && (
-              <button
-                onClick={() => setActiveTab('book')}
-                style={{
-                  ...styles.logoutBtn,
-                  background: '#10b981'
-                }}
-                onMouseEnter={(e) => (e.target.style.background = '#059669')}
-                onMouseLeave={(e) => (e.target.style.background = '#10b981')}
-              >
-                Book New Appointment
-              </button>
-            )}
-          </div>
-
-          {activeTab === 'book' ? (
-            <>
-              <AppointmentForm />
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                style={{
-                  ...styles.logoutBtn,
-                  background: '#6b7280',
-                  marginTop: '20px'
-                }}
-                onMouseEnter={(e) => (e.target.style.background = '#4b5563')}
-                onMouseLeave={(e) => (e.target.style.background = '#6b7280')}
-              >
-                Back to Dashboard
-              </button>
-            </>
-          ) : (
-            <>
-              {error && (
-                <div style={{
-                  padding: '12px',
-                  marginBottom: '20px',
-                  background: '#fee2e2',
-                  color: '#dc2626',
-                  borderRadius: '8px'
-                }}>
-                  {error}
-                </div>
-              )}
-              <ul style={styles.menuList}>
-                {menuItems.map((item, index) => (
-                  <li
-                    key={index}
-                    style={styles.menuItem}
-                    onClick={() => navigate(item.path)}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "#7c3aed";
-                      e.target.style.color = "white";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "#f3f4f6";
-                      e.target.style.color = "black";
-                    }}
-                  >
-                    {item.name}
-                  </li>
-                ))}
-              </ul>
-            </>
+          {/* Error Message (if any) */}
+          {error && (
+            <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg mt-4">
+              {error}
+            </div>
           )}
-        </div>
+
+          {/* Upcoming and Recent Activity */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <UpcomingAppointments />
+            <RecentActivity />
+          </div>
+        </main>
       </div>
     </div>
   );
