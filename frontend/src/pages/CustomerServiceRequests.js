@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getMyVehicles } from "../services/api";
+import AppointmentStore from "../utils/AppointmentStore";
 
 const CustomerServiceRequests = () => {
   const [services, setServices] = useState([]);
@@ -123,6 +124,8 @@ const CustomerServiceRequests = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      
       const response = await fetch(
         "http://localhost:5000/api/services/request",
         {
@@ -139,6 +142,19 @@ const CustomerServiceRequests = () => {
 
       if (response.ok) {
         const appointmentDate = new Date(data.appointment.date);
+        
+        // Create notification for staff using AppointmentStore
+        AppointmentStore.addNotification({
+          id: Date.now().toString(),
+          type: 'NEW_APPOINTMENT',
+          title: 'New Appointment Request',
+          message: `New appointment request from ${user.name} for ${formData.serviceType} on ${appointmentDate.toLocaleDateString()} at ${formData.timeSlot}`,
+          forRole: 'employee',
+          appointmentId: data.appointment._id,
+          createdAt: new Date().toISOString(),
+          read: false
+        });
+        
         const message = `✓ Service request submitted successfully!\n\nYour appointment is confirmed for:\n${appointmentDate.toLocaleDateString(
           "en-US",
           {
