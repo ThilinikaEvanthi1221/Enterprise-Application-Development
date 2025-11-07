@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CustomerFeedback from "../components/CustomerFeedback";
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
@@ -247,6 +248,11 @@ export default function CustomerDashboard() {
     { name: "My Services", path: "/customer/my-services", icon: "🔧" },
     { name: "My Vehicles", path: "/vehicle-register", icon: "🚗" },
     { name: "Service History", path: "/customer/history", icon: "📋" },
+    {
+      name: "Give Feedback",
+      tab: "feedback",
+      icon: "💬",
+    },
     { name: "My Profile", path: "/profile", icon: "👤" },
   ];
 
@@ -383,6 +389,8 @@ export default function CustomerDashboard() {
 
         {/* Main Content Area */}
         <main style={styles.content}>
+          {activeTab === "feedback" && <CustomerFeedback />}
+          
           {activeTab === "dashboard" && (
             <>
               {/* Stats Cards */}

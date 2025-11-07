@@ -10,6 +10,7 @@ import InventoryDashboard from "../inventory-management/pages/InventoryDashboard
 import Reports from "../inventory-management/pages/Reports";
 import PartsManagement from "../inventory-management/pages/PartsManagement";
 import StockAdjustment from "../inventory-management/pages/StockAdjustment";
+import CustomerRatings from "../components/CustomerRatings";
 import "./Dashboard.css";
 
 export default function EmployeeDashboard() {
@@ -463,6 +464,7 @@ export default function EmployeeDashboard() {
           <Route path="/notifications" element={<NotificationsPage />} />
            <Route path="/parts" element={<PartsManagement />} />
           <Route path="/stock-adjustment" element={<StockAdjustment />} />
+          <Route path="/ratings" element={<CustomerRatings />} />
         </Routes>
       </main>
     </div>

@@ -5,6 +5,7 @@ A comprehensive automotive service and inventory management system with customer
 ## Project Overview
 
 This is a full-stack MERN application that combines:
+
 - **Core Service Management**: Complete automotive service management system
 - **Inventory Management**: Comprehensive spare parts and inventory tracking
 - **Customer Feedback System**: Service ratings and feedback collection
@@ -44,11 +45,13 @@ Enterprise-Application-Development/
 ## Features
 
 ### Core System Features
+
 - **Role-based Access Control**: Admin, Inventory Manager, Service Manager, Mechanic, Employee, Customer
 - **JWT Authentication**: Secure token-based authentication
 - **Permission System**: Granular permissions for different operations
 
 ### Customer Feedback System
+
 - **Service Ratings**: 1-5 star rating system for services
 - **Feedback Collection**: Detailed customer feedback and comments
 - **Rating Analytics**: Dashboard with KPIs and breakdowns
@@ -56,6 +59,7 @@ Enterprise-Application-Development/
 - **Data Visualization**: Charts and graphs using Recharts
 
 ### Inventory Management
+
 - **Parts Management**: Create, update, delete, and track spare parts
 - **Stock Control**: Real-time stock tracking and adjustments
 - **Location Management**: Warehouse, section, shelf, and bin tracking
@@ -64,6 +68,7 @@ Enterprise-Application-Development/
 ## Quick Start Guide
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - MongoDB Atlas account or local MongoDB
 - npm or yarn package manager
@@ -72,6 +77,7 @@ Enterprise-Application-Development/
 
 1. **Backend Environment (.env)**
    Create `backend/.env` with:
+
    ```env
    MONGO_URI=mongodb+srv://ewadanambi_db_user:QFQEKNS9pWPXcimP@ead.pk3etwe.mongodb.net/
    DB_NAME=autoservicepro
@@ -80,31 +86,35 @@ Enterprise-Application-Development/
    ```
 
 2. **Install Dependencies**
+
    ```bash
    # Backend dependencies
    cd backend && npm install
-   
+
    # Frontend dependencies
    cd ../frontend && npm install
    ```
 
 3. **Seed Demo Data (Optional)**
+
    ```bash
    cd backend
    npm run seed
    ```
 
 4. **Run the Applications**
-   
+
    Open two terminals:
-   
+
    **Terminal 1 - Backend:**
+
    ```bash
    cd backend
    npm start
    ```
-   
+
    **Terminal 2 - Frontend:**
+
    ```bash
    cd frontend
    npm run dev
@@ -115,17 +125,20 @@ The frontend dev server proxies `/api` to `http://localhost:5000`.
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login
 - `GET /api/auth/profile` - Get user profile
 
 ### Customer Feedback & Ratings
+
 - `GET /api/ratings` - List ratings with query params: `page`, `limit`, `search`, `sortBy`, `sortOrder`, `dateFrom`, `dateTo`, `minRating`, `maxRating`, `serviceType`
 - `GET /api/ratings/summary` - Aggregated KPIs and breakdown for dashboard
 - `POST /api/ratings` - Create new rating/feedback
 - `POST /api/ratings/seed` - Seed random demo data
 
 ### Inventory Management
+
 - `GET /api/inventory/parts` - Get all parts
 - `POST /api/inventory/parts` - Create new part
 - `PUT /api/inventory/parts/:id` - Update part
@@ -135,18 +148,19 @@ The frontend dev server proxies `/api` to `http://localhost:5000`.
 
 ## User Roles & Access Levels
 
-| Role | Inventory Access | Customer Feedback | Service Management |
-|------|------------------|-------------------|-------------------|
-| **Admin** | Full Access | Full Access | Full Access |
-| **Inventory Manager** | Full Inventory | View Reports | Limited |
-| **Service Manager** | Parts Operations | Full Access | Full Access |
-| **Mechanic** | Parts View/Request | View Only | Service Operations |
-| **Employee** | Read Only | View Only | Limited |
-| **Customer** | No Access | Create/View Own | Book Services |
+| Role                  | Inventory Access   | Customer Feedback | Service Management |
+| --------------------- | ------------------ | ----------------- | ------------------ |
+| **Admin**             | Full Access        | Full Access       | Full Access        |
+| **Inventory Manager** | Full Inventory     | View Reports      | Limited            |
+| **Service Manager**   | Parts Operations   | Full Access       | Full Access        |
+| **Mechanic**          | Parts View/Request | View Only         | Service Operations |
+| **Employee**          | Read Only          | View Only         | Limited            |
+| **Customer**          | No Access          | Create/View Own   | Book Services      |
 
 ## Technology Stack
 
 ### Backend
+
 - **Runtime**: Node.js with Express.js
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JWT with bcryptjs
@@ -154,6 +168,7 @@ The frontend dev server proxies `/api` to `http://localhost:5000`.
 - **File Upload**: Multer for file handling
 
 ### Frontend
+
 - **Framework**: React 18+ with Vite
 - **Routing**: React Router DOM
 - **Charts**: Recharts for data visualization
@@ -164,6 +179,7 @@ The frontend dev server proxies `/api` to `http://localhost:5000`.
 ### Database Schema
 
 #### Rating Model (Customer Feedback)
+
 ```javascript
 {
   customerName: String,
@@ -176,6 +192,7 @@ The frontend dev server proxies `/api` to `http://localhost:5000`.
 ```
 
 #### User Model
+
 ```javascript
 {
   name: String,
@@ -191,6 +208,7 @@ The frontend dev server proxies `/api` to `http://localhost:5000`.
 ## Development Scripts
 
 ### Backend Scripts
+
 ```bash
 npm start            # Start production server
 npm run dev          # Development with --watch
@@ -199,6 +217,7 @@ npm test             # Run tests (placeholder)
 ```
 
 ### Frontend Scripts
+
 ```bash
 npm run dev          # Start Vite dev server
 npm start            # Alias for dev
@@ -209,6 +228,7 @@ npm run preview      # Preview production build
 ## Key Features Implementation
 
 ### Customer Feedback Dashboard
+
 - **KPI Cards**: Average rating, total feedback, recent ratings
 - **Rating Distribution**: Visual breakdown by star rating
 - **Advanced Filtering**: Filter by date range, rating, service type
@@ -216,6 +236,7 @@ npm run preview      # Preview production build
 - **Search Functionality**: Search through feedback comments
 
 ### Inventory Integration
+
 - **Real-time Stock Updates**: Live inventory tracking
 - **Smart Alerts**: Automated reorder notifications
 - **Multi-location Support**: Track parts across locations
