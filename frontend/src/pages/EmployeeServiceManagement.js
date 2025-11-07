@@ -54,7 +54,8 @@ const EmployeeServiceManagement = () => {
 
   useEffect(() => {
     fetchServices();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // fetchServices is intentionally excluded to prevent infinite re-renders when activeTab changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const fetchServices = async () => {
