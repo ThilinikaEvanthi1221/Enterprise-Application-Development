@@ -6,8 +6,6 @@ const EmployeeServiceManagement = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [assignedServices, setAssignedServices] = useState([]);
-  const [availableServices, setAvailableServices] = useState([]);
-  const [activeTab, setActiveTab] = useState("assigned");
   const [loading, setLoading] = useState(true);
   const [selectedService, setSelectedService] = useState(null);
   const [showProgressModal, setShowProgressModal] = useState(false);
@@ -56,99 +54,53 @@ const EmployeeServiceManagement = () => {
 
   useEffect(() => {
     fetchServices();
-  }, [activeTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only fetch on mount since we only show assigned services
 
   const fetchServices = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
 
-      if (activeTab === "assigned") {
-        // Fetch appointments assigned to this employee
-        const response = await fetch(
-          "http://localhost:5000/api/appointments/my-assignments",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+      console.log("Fetching assigned appointments...");
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error(`Error ${response.status}:`, errorData);
-
-          if (response.status === 403) {
-            alert(
-              `Access forbidden: ${
-                errorData.msg ||
-                "You do not have permission to access this resource"
-              }`
-            );
-            navigate("/");
-            return;
-          }
-          throw new Error(errorData.msg || `HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        setAssignedServices(Array.isArray(data) ? data : []);
-      } else {
-        // Fetch available services
-        const endpoint = "/api/services/available";
-        const response = await fetch(`http://localhost:5000${endpoint}`, {
+      // Fetch appointments assigned to this employee
+      const response = await fetch(
+        "http://localhost:5000/api/appointments/my-assignments",
+        {
           headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error(`Error ${response.status}:`, errorData);
-
-          if (response.status === 403) {
-            alert(
-              `Access forbidden: ${
-                errorData.msg ||
-                "You do not have permission to access this resource"
-              }`
-            );
-            navigate("/");
-            return;
-          }
-          throw new Error(errorData.msg || `HTTP ${response.status}`);
         }
+      );
 
-        const data = await response.json();
-        setAvailableServices(Array.isArray(data) ? data : []);
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(`Error ${response.status}:`, errorData);
+
+        if (response.status === 403) {
+          alert(
+            `Access forbidden: ${
+              errorData.msg ||
+              "You do not have permission to access this resource"
+            }`
+          );
+          navigate("/");
+          return;
+        }
+        throw new Error(errorData.msg || `HTTP ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log("Received data:", data);
+      console.log("Number of assigned appointments:", data.length);
+
+      setAssignedServices(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching services:", error);
       alert(`Error loading services: ${error.message}`);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleClaimService = async (serviceId) => {
-    if (!window.confirm("Claim this service?")) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:5000/api/services/${serviceId}/claim`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response.ok) {
-        alert("Service claimed successfully!");
-        fetchServices();
-      } else {
-        const data = await response.json();
-        alert(data.msg || "Failed to claim service");
-      }
-    } catch (error) {
-      console.error("Error claiming service:", error);
-      alert("Error claiming service");
     }
   };
 
@@ -158,59 +110,26 @@ const EmployeeServiceManagement = () => {
     try {
       const token = localStorage.getItem("token");
 
-      // Check if it's an appointment or service
-      // Appointments have 'customer' field (or came from /my-assignments endpoint)
-      // Services have 'user' field (legacy)
-      const isAppointment =
-        selectedService.customer ||
-        (selectedService.date && !selectedService.user) ||
-        activeTab === "assigned"; // Items in assigned tab are appointments
-
-      console.log(
-        "Updating progress for:",
-        isAppointment ? "Appointment" : "Service"
-      );
+      console.log("Updating appointment progress");
       console.log("Progress data:", progressData);
       console.log("Selected service:", selectedService);
 
-      let response;
-      if (isAppointment) {
-        // Update appointment status and progress using employee endpoint
-        response = await fetch(
-          `http://localhost:5000/api/appointments/my-assignments/${selectedService._id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              status: progressData.status,
-              notes: progressData.notes,
-              progress: progressData.progress,
-            }),
-          }
-        );
-      } else {
-        // Update service progress
-        console.log("Sending service update with data:", progressData);
-        console.log("Service ID:", selectedService._id);
-        console.log(
-          "Full URL:",
-          `http://localhost:5000/api/services/${selectedService._id}/progress`
-        );
-        response = await fetch(
-          `http://localhost:5000/api/services/${selectedService._id}/progress`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(progressData),
-          }
-        );
-      }
+      // Update appointment status and progress using employee endpoint
+      const response = await fetch(
+        `http://localhost:5000/api/appointments/my-assignments/${selectedService._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            status: progressData.status,
+            notes: progressData.notes,
+            progress: progressData.progress,
+          }),
+        }
+      );
 
       console.log("Response status:", response.status);
       console.log("Response ok:", response.ok);
@@ -233,15 +152,7 @@ const EmployeeServiceManagement = () => {
   };
 
   const openProgressModal = (service) => {
-    console.log("Opening progress modal for service:", service);
-    const isAppointment =
-      service.customer ||
-      (service.date && !service.user) ||
-      activeTab === "assigned";
-    console.log("Is appointment?", isAppointment);
-    console.log("Has customer field?", !!service.customer);
-    console.log("Has user field?", !!service.user);
-    console.log("Active tab:", activeTab);
+    console.log("Opening progress modal for appointment:", service);
     setSelectedService(service);
     setProgressData({
       status: service.status,
@@ -277,23 +188,12 @@ const EmployeeServiceManagement = () => {
     });
   };
 
-  const ServiceCard = ({ service, isAvailable = false }) => {
-    // Check if it's an appointment or service
-    // Appointments have 'customer' field, services have 'user' field
-    const isAppointment =
-      service.customer ||
-      (service.date && !service.user) ||
-      activeTab === "assigned";
-    const displayName = isAppointment
-      ? service.service?.name || "Appointment"
-      : service.name;
-    const serviceType = isAppointment
-      ? service.service?.serviceType || "Service"
-      : service.serviceType;
-    const estimatedCost = isAppointment ? service.price : service.estimatedCost;
-    const appointmentDate = isAppointment
-      ? service.date
-      : service.requestedDate;
+  const ServiceCard = ({ service }) => {
+    // All items are now appointments
+    const displayName = service.service?.name || "Appointment";
+    const serviceType = service.service?.serviceType || "Service";
+    const estimatedCost = service.price;
+    const appointmentDate = service.date;
 
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
@@ -335,67 +235,45 @@ const EmployeeServiceManagement = () => {
                   ${estimatedCost?.toFixed(2) || "0.00"}
                 </p>
               </div>
-              {!isAppointment && (
-                <div>
-                  <span className="text-gray-500">Progress:</span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
-                        style={{ width: `${service.progress || 0}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-xs font-medium">
-                      {service.progress || 0}%
-                    </span>
-                  </div>
-                </div>
-              )}
-              {isAppointment && (
-                <div>
-                  <span className="text-gray-500">Scheduled:</span>
-                  <p className="font-medium text-gray-900">
-                    {new Date(appointmentDate).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-              )}
+              <div>
+                <span className="text-gray-500">Scheduled:</span>
+                <p className="font-medium text-gray-900">
+                  {new Date(appointmentDate).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
             </div>
 
             <div className="mt-3 flex gap-4 text-sm text-gray-600">
-              {isAppointment ? (
-                <span>Appointment: {formatDate(appointmentDate)}</span>
-              ) : (
-                <>
-                  <span>Requested: {formatDate(service.requestedDate)}</span>
-                  {service.startDate && (
-                    <span>Started: {formatDate(service.startDate)}</span>
-                  )}
-                </>
-              )}
+              <span>Appointment: {formatDate(appointmentDate)}</span>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-500">Progress:</span>
+                <span className="font-medium">{service.progress || 0}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all"
+                  style={{ width: `${service.progress || 0}%` }}
+                ></div>
+              </div>
             </div>
           </div>
 
           <div className="flex gap-2 ml-4">
-            {isAvailable ? (
-              <button
-                onClick={() => handleClaimService(service._id)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
-              >
-                Claim Service
-              </button>
-            ) : (
-              <button
-                onClick={() => openProgressModal(service)}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
-              >
-                Update Progress
-              </button>
-            )}
+            <button
+              onClick={() => openProgressModal(service)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition"
+            >
+              Update Progress
+            </button>
           </div>
         </div>
 
@@ -403,22 +281,6 @@ const EmployeeServiceManagement = () => {
           <div className="mt-4 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
             <p className="text-sm text-gray-700">
               <strong>Notes:</strong> {service.notes}
-            </p>
-          </div>
-        )}
-
-        {!isAppointment && service.description && (
-          <div className="mt-4 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
-            <p className="text-sm text-gray-700">
-              <strong>Description:</strong> {service.description}
-            </p>
-          </div>
-        )}
-
-        {!isAppointment && service.customerNotes && (
-          <div className="mt-2 p-3 bg-yellow-50 rounded border-l-4 border-yellow-500">
-            <p className="text-sm text-gray-700">
-              <strong>Customer Notes:</strong> {service.customerNotes}
             </p>
           </div>
         )}
@@ -476,10 +338,10 @@ const EmployeeServiceManagement = () => {
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
               />
             </svg>
-            My Service Tasks
+            Assigned Work
           </button>
           <button
-            onClick={() => navigate("/employee/bookings")}
+            onClick={() => navigate("/employee/time-logs")}
             className="nav-item"
           >
             <svg
@@ -492,10 +354,10 @@ const EmployeeServiceManagement = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Bookings
+            Time Logs
           </button>
           <button
             onClick={() => navigate("/employee/customers")}
@@ -682,39 +544,17 @@ const EmployeeServiceManagement = () => {
         </p>
       </div>*/}
 
-          {/* Tabs */}
+          {/* Tab Header */}
           <div className="mb-6 border-b border-gray-200">
             <div className="flex gap-8">
-              <button
-                onClick={() => setActiveTab("assigned")}
-                className={`pb-3 px-2 font-semibold transition ${
-                  activeTab === "assigned"
-                    ? "border-b-2 border-blue-600 text-blue-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                My Assigned Services
+              <div className="pb-3 px-2 font-semibold border-b-2 border-blue-600 text-blue-600">
+                Assigned to Me
                 {assignedServices.length > 0 && (
                   <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                     {assignedServices.length}
                   </span>
                 )}
-              </button>
-              <button
-                onClick={() => setActiveTab("available")}
-                className={`pb-3 px-2 font-semibold transition ${
-                  activeTab === "available"
-                    ? "border-b-2 border-blue-600 text-blue-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Available Services
-                {availableServices.length > 0 && (
-                  <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                    {availableServices.length}
-                  </span>
-                )}
-              </button>
+              </div>
             </div>
           </div>
 
@@ -726,76 +566,40 @@ const EmployeeServiceManagement = () => {
             </div>
           ) : (
             <>
-              {activeTab === "assigned" && (
-                <>
-                  {assignedServices.length === 0 ? (
-                    <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                      <svg
-                        className="mx-auto h-16 w-16 text-gray-400 mb-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        No assigned services
-                      </h3>
-                      <p className="text-gray-500">
-                        Check the Available Services tab to claim work
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-6">
-                      {assignedServices.map((service) => (
-                        <ServiceCard key={service._id} service={service} />
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {activeTab === "available" && (
-                <>
-                  {availableServices.length === 0 ? (
-                    <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                      <svg
-                        className="mx-auto h-16 w-16 text-gray-400 mb-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        No available services
-                      </h3>
-                      <p className="text-gray-500">
-                        All services are currently assigned
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-6">
-                      {availableServices.map((service) => (
-                        <ServiceCard
-                          key={service._id}
-                          service={service}
-                          isAvailable
-                        />
-                      ))}
-                    </div>
-                  )}
-                </>
+              {assignedServices.length === 0 ? (
+                <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                  <svg
+                    className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No assigned appointments yet
+                  </h3>
+                  <p className="text-gray-500 mb-2">
+                    Wait for admin to assign appointments to you
+                  </p>
+                  <p className="text-sm text-gray-400 mt-4">
+                    <strong>Note:</strong> The admin must assign appointments to
+                    you from the Appointments page.
+                    <br />
+                    Once assigned, they will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-6">
+                  {assignedServices.map((service) => (
+                    <ServiceCard key={service._id} service={service} />
+                  ))}
+                </div>
               )}
             </>
           )}
@@ -806,13 +610,7 @@ const EmployeeServiceManagement = () => {
               <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
                 <div className="p-6 border-b border-gray-200">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    Update{" "}
-                    {selectedService.customer ||
-                    (selectedService.date && !selectedService.user) ||
-                    activeTab === "assigned"
-                      ? "Appointment"
-                      : "Service"}{" "}
-                    Progress
+                    Update Appointment Progress
                   </h2>
                   <p className="text-gray-600 mt-1">
                     {selectedService.service?.name || selectedService.name}

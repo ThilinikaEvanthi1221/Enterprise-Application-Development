@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link, Routes, Route, NavLink, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getDashboardStats } from "../services/api";
-import AppointmentStore from "../utils/AppointmentStore";
-import Bookings from "./Bookings";
-import Customers from "./Customers";
-import Staff from "./Staff";
-import TimeLogForm from "./TimeLogForm";
-import InventoryDashboard from "../inventory-management/pages/InventoryDashboard";
-import Reports from "../inventory-management/pages/Reports";
-import PartsManagement from "../inventory-management/pages/PartsManagement";
-import StockAdjustment from "../inventory-management/pages/StockAdjustment";
 import "./Dashboard.css";
 
 export default function EmployeeDashboard() {
@@ -22,13 +13,7 @@ export default function EmployeeDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [currentPage, setCurrentPage] = useState("dashboard");
-  const location = useLocation();
   const navigate = useNavigate();
-  // Notifications (pulled from in-memory store for testing)
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -71,30 +56,6 @@ export default function EmployeeDashboard() {
     fetchDashboardData();
   }, [navigate]);
 
-  // Poll appointment store for notifications so employees see them in near-real-time
-  useEffect(() => {
-    const updateNotifications = () => {
-      try {
-        const notifs = AppointmentStore.getNotifications();
-        setNotifications(notifs.slice().reverse()); // show newest first
-        setUnreadCount(AppointmentStore.getUnreadCount());
-      } catch (e) {
-        console.error('Failed to load notifications from store', e);
-      }
-    };
-
-    updateNotifications();
-    const iv = setInterval(updateNotifications, 2000);
-    // Also listen for storage events so cross-tab updates appear immediately
-    const onStorage = (e) => {
-      if (e.key === '__notifications' || e.key === '__appointments') {
-        updateNotifications();
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => { clearInterval(iv); window.removeEventListener('storage', onStorage); };
-  }, []);
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -123,8 +84,13 @@ export default function EmployeeDashboard() {
     navigate("/login");
   };
 
-  // Removed global loading check - render UI immediately
-  // Only show loading in specific content areas
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <div className="loading">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">
@@ -137,7 +103,7 @@ export default function EmployeeDashboard() {
           </div>
         </div>
         <nav className="sidebar-nav">
-          <NavLink to="/employee" end className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+          <a href="#dashboard" className="nav-item active">
             <svg
               className="nav-icon"
               fill="none"
@@ -152,24 +118,15 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Dashboard
-          </NavLink>
-          <NavLink to="/employee-services" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
-            <svg
-              className="nav-icon"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-              />
-            </svg>
-            My Service Tasks
-          </NavLink>
-          <NavLink to="/employee/bookings" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+          </a>
+          <a
+            href="/employee-services"
+            className="nav-item"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/employee-services");
+            }}
+          >
             <svg
               className="nav-icon"
               fill="none"
@@ -183,9 +140,9 @@ export default function EmployeeDashboard() {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            Bookings
-          </NavLink>
-          <NavLink to="/employee/customers" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+            My Assigned Work
+          </a>
+          <a href="#customers" className="nav-item">
             <svg
               className="nav-icon"
               fill="none"
@@ -200,8 +157,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Customers
-          </NavLink>
-          <NavLink to="/employee/inventory" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+          </a>
+          <a href="#inventory" className="nav-item">
             <svg
               className="nav-icon"
               fill="none"
@@ -216,8 +173,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Inventory
-          </NavLink>
-          <NavLink to="/employee/staff" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+          </a>
+          <a href="#staff" className="nav-item">
             <svg
               className="nav-icon"
               fill="none"
@@ -232,8 +189,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Staff Management
-          </NavLink>
-          <NavLink to="/employee/notifications" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+          </a>
+          <a href="#notifications" className="nav-item">
             <svg
               className="nav-icon"
               fill="none"
@@ -248,40 +205,8 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Notifications
-          </NavLink>
-          <NavLink to="/employee/reports" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
-            <svg
-              className="nav-icon"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            Reports
-          </NavLink>
-          <NavLink to="/employee/time-log" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
-            <svg
-              className="nav-icon"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            Time Logging
-          </NavLink>
-          <NavLink to="/employee/ratings" className={({isActive}) => `nav-item${isActive ? ' active' : ''}`}>
+          </a>
+          <a href="#ratings" className="nav-item">
             <svg
               className="nav-icon"
               fill="none"
@@ -296,7 +221,7 @@ export default function EmployeeDashboard() {
               />
             </svg>
             Service Ratings
-          </NavLink>
+          </a>
         </nav>
       </aside>
 
@@ -305,20 +230,11 @@ export default function EmployeeDashboard() {
         {/* Header */}
         <header className="dashboard-header">
           <div className="header-left">
-            {(() => {
-              const path = location.pathname;
-              let title = "Dashboard";
-              if (path.startsWith("/employee/bookings")) title = "Bookings";
-              else if (path.startsWith("/employee/customers")) title = "Customers";
-              else if (path.startsWith("/employee/staff")) title = "Staff Management";
-              else if (path.startsWith("/employee/time-log")) title = "Time Logging";
-              else if (path.startsWith("/employee/inventory")) title = "Inventory";
-              else if (path.startsWith("/employee/reports")) title = "Reports";
-              else if (path.startsWith("/employee/ratings")) title = "Service Ratings";
-              else if (path.startsWith("/employee-services")) title = "My Service Tasks";
-              return <h1 className="page-title">{title}</h1>;
-            })()}
-            <p className="page-subtitle">Let's check your Garage today</p>
+            <h1 className="page-title">Employee Dashboard</h1>
+            <div className="greeting">
+              <h2>Hi, {user?.name || "Employee"}</h2>
+              <p>Let's check your Garage today</p>
+            </div>
           </div>
           <div className="header-right">
             <div className="search-bar">
@@ -339,15 +255,7 @@ export default function EmployeeDashboard() {
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              <div
-                className="notification-icon"
-                role="button"
-                tabIndex={0}
-                onClick={() => navigate('/employee/notifications')}
-                onKeyDown={(e) => { if (e.key === 'Enter') navigate('/employee/notifications'); }}
-                style={{ cursor: 'pointer' }}
-                aria-label="Open notifications"
-              >
+              <div className="notification-icon">
                 <svg
                   className="icon"
                   fill="none"
@@ -361,89 +269,15 @@ export default function EmployeeDashboard() {
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                   />
                 </svg>
-                {/* show unread count; simple dot when zero shows nothing */}
-                <span className="notification-dot">{unreadCount > 0 ? unreadCount : ''}</span>
+                <span className="notification-dot"></span>
               </div>
             </div>
-            <div className="user-profile" style={{ position: 'relative' }}>
-              <button
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '5px'
-                }}
-              >
-                <div className="avatar">{user?.name?.charAt(0) || "E"}</div>
-                <div className="user-info">
-                  <span className="user-name">{user?.name || "Employee"}</span>
-                  <span className="user-role">Employee</span>
-                </div>
-              </button>
-              
-              {/* User Dropdown Menu */}
-              {showUserMenu && (
-                <>
-                  <div
-                    style={{
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      zIndex: 40
-                    }}
-                    onClick={() => setShowUserMenu(false)}
-                  ></div>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '100%',
-                      marginTop: '8px',
-                      width: '200px',
-                      background: 'white',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      border: '1px solid #e5e7eb',
-                      padding: '8px 0',
-                      zIndex: 50
-                    }}
-                  >
-                    <button
-                      onClick={() => {
-                        setShowUserMenu(false);
-                        navigate('/profile');
-                      }}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        padding: '10px 16px',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        color: '#374151',
-                        textAlign: 'left',
-                        transition: 'background 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
-                      onMouseLeave={(e) => e.target.style.background = 'none'}
-                    >
-                      <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      My Profile
-                    </button>
-                  </div>
-                </>
-              )}
+            <div className="user-profile">
+              <div className="avatar">{user?.name?.charAt(0) || "E"}</div>
+              <div className="user-info">
+                <span className="user-name">{user?.name || "Employee"}</span>
+                <span className="user-role">Employee</span>
+              </div>
             </div>
             <button onClick={handleLogout} className="logout-btn">
               Logout
@@ -451,41 +285,8 @@ export default function EmployeeDashboard() {
           </div>
         </header>
 
-        {/* Nested Routes Content */}
-        <Routes>
-          <Route path="/" element={<DashboardHome stats={stats} formatDate={formatDate} getStatusColor={getStatusColor} />} />
-          <Route path="/bookings" element={<Bookings />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/staff" element={<Staff />} />
-          <Route path="/time-log" element={<TimeLogForm />} />
-          <Route path="/inventory" element={<InventoryDashboard />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-           <Route path="/parts" element={<PartsManagement />} />
-          <Route path="/stock-adjustment" element={<StockAdjustment />} />
-        </Routes>
-      </main>
-    </div>
-  );
-}
-
-// Dashboard Home Component (the main dashboard view)
-function DashboardHome({ stats, formatDate, getStatusColor }) {
-  // Simple loading state - stats will be empty on first render
-  const isLoading = stats.recentBookings === undefined || stats.totalProjects === undefined;
-  
-  if (isLoading) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
-        <div style={{ fontSize: '18px' }}>Loading dashboard data...</div>
-      </div>
-    );
-  }
-  
-  return (
-    <>
-      {/* Dashboard Stats */}
-      <div className="dashboard-stats">
+        {/* Dashboard Stats */}
+        <div className="dashboard-stats">
           {/* Total Projects Assigned */}
           <div className="stat-card">
             <div className="stat-header">
@@ -660,57 +461,7 @@ function DashboardHome({ stats, formatDate, getStatusColor }) {
             </table>
           </div>
         </div>
-      </>
-    );
-}
-
-// Notifications Page for employees (reads from AppointmentStore)
-function NotificationsPage() {
-  const [list, setList] = React.useState([]);
-
-  const reload = () => {
-    const nots = AppointmentStore.getNotifications().slice().reverse();
-    setList(nots);
-  };
-
-  React.useEffect(() => {
-    reload();
-    const iv = setInterval(reload, 2000);
-    return () => clearInterval(iv);
-  }, []);
-
-  const markRead = (id) => {
-    AppointmentStore.markNotificationAsRead(id);
-    reload();
-  };
-
-  return (
-    <div style={{ padding: 20 }}>
-      <h2>Notifications</h2>
-      {list.length === 0 ? (
-        <div>No notifications</div>
-      ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {list.map(n => (
-            <li key={n.id} style={{ borderBottom: '1px solid #eee', padding: '12px 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <strong>{n.title || n.type}</strong>
-                  <div style={{ color: '#666' }}>{n.message}</div>
-                  <div style={{ fontSize: 12, color: '#999' }}>{new Date(n.createdAt).toLocaleString()}</div>
-                </div>
-                <div style={{ marginLeft: 12 }}>
-                  {!n.read && (
-                    <button onClick={() => markRead(n.id)} style={{ background: '#2563eb', color: 'white', padding: '6px 8px', borderRadius: 4, border: 'none' }}>
-                      Mark read
-                    </button>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      </main>
     </div>
   );
 }
