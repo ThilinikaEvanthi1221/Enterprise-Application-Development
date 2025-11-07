@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import { signup } from "../services/api";
 
 export default function Signup() {
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "customer" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "admin" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await signup(form);
-    alert(res.data.msg);
+    try {
+      const res = await signup(form);
+      alert(res.data.msg);
+    } catch (error) {
+      alert(error.response?.data?.msg || "Signup failed");
+    }
   };
 
   // Shared styles
@@ -83,9 +87,9 @@ export default function Signup() {
         <select
           style={styles.select}
           onChange={(e) => setForm({ ...form, role: e.target.value })}
+          value={form.role}
         >
-          <option value="customer">Customer</option>
-          <option value="employee">Employee</option>
+          <option value="admin">Admin</option>
         </select>
         <button
           style={styles.button}

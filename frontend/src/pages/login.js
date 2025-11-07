@@ -13,8 +13,8 @@ export default function Login() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       
-      // Redirect to appointment booking page
-      navigate("/book-appointment");
+      // Redirect to admin dashboard
+      navigate("/admin");
     } catch (error) {
       alert("Login failed: " + (error.response?.data?.msg || error.message));
     }

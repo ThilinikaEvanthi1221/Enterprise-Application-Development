@@ -5,10 +5,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./pages/login";
 import Signup from "./pages/signup";
 
-// Components
-import AppointmentBooking from "./components/AppointmentBooking";
-import AppointmentList from "./components/AppointmentList";
-import HeaderBar from "./components/HeaderBar";
+// Admin Pages
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -19,12 +17,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         
-        {/* Appointment Routes */}
-        <Route path="/book-appointment" element={<AppointmentBooking />} />
-        <Route path="/appointments" element={<AppointmentList />} />
-        
-        {/* Header Route (for testing) */}
-        <Route path="/header" element={<HeaderBar />} />
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard" element={<AdminDashboard />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />

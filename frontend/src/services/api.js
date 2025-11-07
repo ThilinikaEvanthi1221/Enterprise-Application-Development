@@ -6,15 +6,23 @@ const API = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Add token to requests if available
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // ------------------ AUTH APIs ------------------
 export const signup = (data) => API.post("/auth/signup", data);
 export const login = (data) => API.post("/auth/login", data);
 
-// ------------------ APPOINTMENT APIs ------------------
-export const getAvailableSlots = (date) => 
-  API.get(`/appointments/available?date=${date}`);
+// ------------------ ADMIN APIs ------------------
+export const getHealthStatus = () => API.get("/health");
 
-export const bookAppointment = (data) => 
-  API.post("/appointments", data);
+// ------------------ EMAIL UTILITIES ------------------
+// Email utility functions can be added here for admin email management
 
 export default API;
