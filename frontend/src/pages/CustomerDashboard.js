@@ -25,24 +25,33 @@ export default function CustomerDashboard() {
     fetchActiveServices();
   }, []);
 
-  const fetchAppointments = () => {
+  const fetchAppointments = async () => {
     try {
-      console.log("Fetching appointments from store...");
+      console.log("Fetching appointments from API...");
+      const token = localStorage.getItem("token");
       const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-      if (!user.id) {
+      if (!user.id || !token) {
         setError("Please log in to view appointments");
         setLoading(false);
         return;
       }
 
-      // Get all appointments from store
-      const allAppointments = AppointmentStore.getAppointments();
-
-      // Filter appointments for current user
-      const userAppointments = allAppointments.filter(
-        (apt) => apt.customerId === user.id
+      // Fetch appointments from API
+      const response = await fetch(
+        "http://localhost:5000/api/appointments/my",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch appointments");
+      }
+
+      const userAppointments = await response.json();
 
       // Calculate stats from appointments array
       const calculatedStats = userAppointments.reduce(
@@ -399,6 +408,144 @@ export default function CustomerDashboard() {
             >
               View All Services →
             </button>
+          </div>
+        )}
+
+        {/* Recent Appointments Section */}
+        {appointments.length > 0 && (
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>📅 Recent Appointments</h2>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+            >
+              {appointments.slice(0, 5).map((appointment) => (
+                <div
+                  key={appointment._id}
+                  style={{
+                    padding: "16px",
+                    background: "#f9fafb",
+                    borderRadius: "8px",
+                    borderLeft: `4px solid ${
+                      appointment.status === "completed"
+                        ? "#10b981"
+                        : appointment.status === "in-progress"
+                        ? "#7c3aed"
+                        : "#3b82f6"
+                    }`,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <h3
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#1f2937",
+                        margin: 0,
+                      }}
+                    >
+                      {appointment.service?.name || "Service"}
+                    </h3>
+                    <span
+                      style={{
+                        padding: "4px 12px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        background:
+                          appointment.status === "completed"
+                            ? "#d1fae5"
+                            : appointment.status === "in-progress"
+                            ? "#ddd6fe"
+                            : "#dbeafe",
+                        color:
+                          appointment.status === "completed"
+                            ? "#065f46"
+                            : appointment.status === "in-progress"
+                            ? "#6b21a8"
+                            : "#1e3a8a",
+                      }}
+                    >
+                      {appointment.status === "completed"
+                        ? "✅ Completed"
+                        : appointment.status === "in-progress"
+                        ? "⚙️ In Progress"
+                        : appointment.status === "confirmed"
+                        ? "✓ Confirmed"
+                        : "⏳ Pending"}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      color: "#6b7280",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {new Date(appointment.date).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    • {appointment.vehicle?.make} {appointment.vehicle?.model}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        flex: 1,
+                        background: "#e5e7eb",
+                        borderRadius: "9999px",
+                        height: "8px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${appointment.progress || 0}%`,
+                          background: "#7c3aed",
+                          height: "100%",
+                          borderRadius: "9999px",
+                          transition: "width 0.3s",
+                        }}
+                      ></div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        color: "#7c3aed",
+                      }}
+                    >
+                      {appointment.progress || 0}%
+                    </span>
+                  </div>
+                  {appointment.assignedTo && (
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#9ca3af",
+                        marginTop: "8px",
+                      }}
+                    >
+                      👤 Assigned to: {appointment.assignedTo.name}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

@@ -304,6 +304,9 @@ const Appointments = () => {
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Progress
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Price
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -314,14 +317,14 @@ const Appointments = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading && (
                   <tr>
-                    <td className="px-6 py-4" colSpan={7}>
+                    <td className="px-6 py-4" colSpan={8}>
                       Loading...
                     </td>
                   </tr>
                 )}
                 {error && !loading && (
                   <tr>
-                    <td className="px-6 py-4 text-red-600" colSpan={7}>
+                    <td className="px-6 py-4 text-red-600" colSpan={8}>
                       {error}
                     </td>
                   </tr>
@@ -330,7 +333,7 @@ const Appointments = () => {
                   <tr>
                     <td
                       className="px-6 py-4 text-gray-500 text-center"
-                      colSpan={7}
+                      colSpan={8}
                     >
                       No appointments found
                     </td>
@@ -404,6 +407,24 @@ const Appointments = () => {
                           >
                             {statusDisplay}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex items-center">
+                            <div
+                              className="w-full bg-gray-200 rounded-full h-2.5 mr-2"
+                              style={{ minWidth: "80px" }}
+                            >
+                              <div
+                                className="bg-blue-600 h-2.5 rounded-full"
+                                style={{
+                                  width: `${appointment.progress || 0}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-gray-700 font-medium">
+                              {appointment.progress || 0}%
+                            </span>
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
                           {price}
@@ -507,6 +528,25 @@ const Appointments = () => {
                         <p className="font-medium text-green-600">
                           ${selectedAppointment.price?.toFixed(2) || "0.00"}
                         </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Progress</p>
+                        <div className="flex items-center mt-1">
+                          <div
+                            className="w-full bg-gray-200 rounded-full h-2.5 mr-2"
+                            style={{ maxWidth: "100px" }}
+                          >
+                            <div
+                              className="bg-blue-600 h-2.5 rounded-full"
+                              style={{
+                                width: `${selectedAppointment.progress || 0}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <span className="font-medium text-blue-600">
+                            {selectedAppointment.progress || 0}%
+                          </span>
+                        </div>
                       </div>
                       <div className="col-span-2">
                         <p className="text-gray-500">Notes</p>

@@ -24,6 +24,7 @@ const appointmentSchema = new mongoose.Schema(
       default: "pending",
     },
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Employee assigned to this appointment
+    progress: { type: Number, default: 0, min: 0, max: 100 }, // Progress percentage
     notes: { type: String },
     estimatedDuration: { type: Number, required: true }, // in minutes
     actualDuration: { type: Number }, // in minutes, filled when completed
