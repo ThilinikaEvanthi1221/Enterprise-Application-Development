@@ -186,6 +186,7 @@ const menuItems = [
   { name: "📅 Book an Appointment", path: "/customer-service-requests", icon: "📅" },
   { name: "🔧 My Services", path: "/customer/my-services", icon: "🔧" },
   { name: "🚗 My Vehicles", path: "/customer/vehicles", icon: "🚗" },
+  { name: "➕ Register Vehicle", path: "/vehicle-register", icon: "➕" },
   { name: "📋 Service History", path: "/customer/history", icon: "📋" },
   { name: "👤 My Profile", path: "/customer/profile", icon: "👤" },
 ];
