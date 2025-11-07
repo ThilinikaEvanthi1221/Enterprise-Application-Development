@@ -23,7 +23,7 @@ export default function AddEmployee() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Create employee with role
+      // Create employee with role "employee"
       const employeeData = { ...form, role: "employee" };
       await API.post("/auth/signup", employeeData);
       
